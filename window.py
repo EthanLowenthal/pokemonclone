@@ -1,4 +1,4 @@
-import pygame, time
+import pygame, time, random
 from maps import *
 
 pygame.init()
