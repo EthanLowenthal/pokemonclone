@@ -1,10 +1,11 @@
-import pygame, time, random
+import pygame, time, random, json, requests
 from maps import *
+from pokemon import *
 
 pygame.init()
 
+# map = tutorial
 map = mid
-
 
 class Player:
     def __init__(self):
@@ -14,6 +15,10 @@ class Player:
         self.speed = 5
 
     def change_world(self):
+        # for i in range(200):
+        #     pygame.draw.circle(world, colors["BLACK"], (400, 400), i)
+        #     print(i)
+        #     time.sleep(0.4)
         display.fill(colors["BLACK"])
         world.fill(colors["BLACK"])
         pygame.display.flip()
@@ -84,21 +89,71 @@ class Player:
                 map = mid
             self.change_world()
 
-        pos_x, pos_y = -self.rect.x + 400, -self.rect.y + 400
-        return (pos_x, pos_y)
+        pos_x, pos_y = -self.rect.x/2 + 150, -self.rect.y/2 + 150
+        return (pos_x, pos_y), (self.rect.x, self.rect.y)
 
     def render(self,display):
         display.blit(self.image,(self.rect.x,self.rect.y))
 
 
+def draw_legend():
+    pygame.draw.rect(display, colors["WHITE"], ((15, 15), (120, 120)))
+    pygame.draw.rect(display, colors["LIGHT_BLUE"], ((25, 25), (100, 100)))
+
+    # pygame.draw.rect(display, colors["DARK_RED"], ((32, 32), (25, 25)))
+    # pygame.draw.rect(display, colors["DARK_RED"], ((32, 92), (25, 25)))
+    # pygame.draw.rect(display, colors["DARK_RED"], ((92, 32), (25, 25)))
+    # pygame.draw.rect(display, colors["DARK_RED"], ((92, 92), (25, 25)))
+
+
+    pygame.draw.rect(display, colors["DARK_RED"], ((32, 62), (25, 25)))  # left
+    pygame.draw.rect(display, colors["DARK_RED"], ((62, 32), (25, 25)))  # up
+    pygame.draw.rect(display, colors["DARK_RED"], ((62, 62), (25, 25)))  # mid
+    pygame.draw.rect(display, colors["DARK_RED"], ((62, 92), (25, 25)))  # down
+    pygame.draw.rect(display, colors["DARK_RED"], ((92, 62), (25, 25)))  # right
+
+    if map == up:
+        pygame.draw.rect(display, colors["YELLOW"], ((62, 32), (25, 25)))  # up
+
+    elif map == down:
+        pygame.draw.rect(display, colors["YELLOW"], ((62, 92), (25, 25)))  # down
+
+    elif map == left:
+        pygame.draw.rect(display, colors["YELLOW"], ((32, 62), (25, 25)))  # left
+
+    elif map == right:
+        pygame.draw.rect(display, colors["YELLOW"], ((92, 62), (25, 25)))  # right
+
+    elif map == mid:
+        pygame.draw.rect(display, colors["YELLOW"], ((62, 62), (25, 25)))  # mid
+
+def draw_map():
+    for pos2, line in enumerate(map):
+        for pos1, wall in enumerate(line):
+            if wall == tiles["WATER"]:
+                pygame.draw.rect(world, colors["BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
+            if wall == tiles["LIGHT_GRASS"]:
+                pygame.draw.rect(world, colors["LIGHT_GREEN"], ((pos1 * 50, pos2 * 50), (50, 50)))
+            if wall == tiles["BRICK"]:
+                pygame.draw.rect(world, colors["DARK_RED"], ((pos1 * 50, pos2 * 50), (50, 50)))
+            if wall == tiles["PATH"]:
+                pygame.draw.rect(world, colors["GREY"], ((pos1 * 50, pos2 * 50), (50, 50)))
+            if wall == tiles["ICE"]:
+                pygame.draw.rect(world, colors["LIGHT_BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
+
+
+def fight():
+    pass
 
 def Main(display,clock, world):
     for x in range(10):
         pygame.draw.rect(world,colors["BLUE"],((x * 100,x * 100),(20,20)))
-    #
+
     player = Player()
     camera_pos = (192,192)
-    #
+
+    last_cam_pos = camera_pos
+
     while True:
         clock.tick(60)
         for event in pygame.event.get():
@@ -106,66 +161,52 @@ def Main(display,clock, world):
                 pygame.quit()
                 return
 
-        camera_pos = player.move(camera_pos)
+        camera_pos, player_pos = player.move(camera_pos)
 
         display.fill(colors["WORLD"])
         world.fill(colors["DARK_GREEN"])
 
-        for pos2, line in enumerate(map):
-            for pos1, wall in enumerate(line):
-                if wall == 1:
-                    pygame.draw.rect(world, colors["BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
-                if wall == 2:
-                    pygame.draw.rect(world, colors["LIGHT_GREEN"], ((pos1 * 50, pos2 * 50), (50, 50)))
-                if wall == 3:
-                    pygame.draw.rect(world, colors["DARK_RED"], ((pos1 * 50, pos2 * 50), (50, 50)))
-                if wall == 4:
-                    pygame.draw.rect(world, colors["GREY"], ((pos1 * 50, pos2 * 50), (50, 50)))
-                if wall == 5:
-                    pygame.draw.rect(world, colors["LIGHT_BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
+        current_tile = map[int(player_pos[1]/50)][int(player_pos[0]/50)]
+        if current_tile == tiles["PATH"]:
+            player.speed = 5
+        elif current_tile == tiles["WATER"]:
+            player.speed = 1
+        else:
+            player.speed = 3
 
-        def draw_map():
-            pygame.draw.rect(display, colors["WHITE"], ((15, 15), (120, 120)))
-            pygame.draw.rect(display, colors["LIGHT_BLUE"], ((25, 25), (100, 100)))
-
-            # pygame.draw.rect(display, colors["DARK_RED"], ((32, 32), (25, 25)))
-            # pygame.draw.rect(display, colors["DARK_RED"], ((32, 92), (25, 25)))
-            # pygame.draw.rect(display, colors["DARK_RED"], ((92, 32), (25, 25)))
-            # pygame.draw.rect(display, colors["DARK_RED"], ((92, 92), (25, 25)))
-
-
-            pygame.draw.rect(display, colors["DARK_RED"], ((32, 62), (25, 25))) #left
-            pygame.draw.rect(display, colors["DARK_RED"], ((62, 32), (25, 25))) #up
-            pygame.draw.rect(display, colors["DARK_RED"], ((62, 62), (25, 25))) #mid
-            pygame.draw.rect(display, colors["DARK_RED"], ((62, 92), (25, 25))) #down
-            pygame.draw.rect(display, colors["DARK_RED"], ((92, 62), (25, 25))) #right
-
-            if map == up:
-                pygame.draw.rect(display, colors["YELLOW"], ((62, 32), (25, 25)))  # up
-
-            elif map == down:
-                pygame.draw.rect(display, colors["YELLOW"], ((62, 92), (25, 25)))  # down
-
-            elif map == left:
-                pygame.draw.rect(display, colors["YELLOW"], ((32, 62), (25, 25)))  # left
-
-            elif map == right:
-                pygame.draw.rect(display, colors["YELLOW"], ((92, 62), (25, 25)))  # right
-
-            elif map == mid:
-                pygame.draw.rect(display, colors["YELLOW"], ((62, 62), (25, 25)))  # mid
-
+        draw_map()
 
         player.render(world)
         display.blit(world,camera_pos)
 
-        draw_map()
+        draw_legend()
 
+        chance = random.randint(1, 1000)
+        if chance >= 999 and current_tile == tiles["GRASS"] and camera_pos != last_cam_pos:
+            pokemon = random.choice(grass_pokemon)
+            display.fill(colors["PINK"])
+            pygame.display.flip()
+            resp = requests.get(pokemon)
+            print('You encountered a ' + json.loads(resp.text)['name'])
+            def selection():
+                selection = input('Make a selection:\n1: Run 2: Fight\n')
+                if selection == '1':
+                    print('You ran away!')
+                elif selection == '2':
+                    fight()
+                else:
+                    print('Command not recongnised')
+                    selection()
+
+            selection()
+
+        last_cam_pos = camera_pos
 
         pygame.display.flip()
 
+
 if __name__ in "__main__":
-    global colors
+    global colors, tiles
     colors = {
         "WHITE": (255, 255, 255),
         "RED": (255, 0, 0),
@@ -177,8 +218,18 @@ if __name__ in "__main__":
         "BLACK": (0, 0, 0),
         "GREY": (64, 64, 64),
         "WORLD": (25, 0, 51),
-        "YELLOW": (255, 255, 51)
+        "YELLOW": (255, 255, 51),
+        "PINK": (153, 0, 153)
 
+    }
+
+    tiles = {
+        "GRASS":0,
+        "WATER":1,
+        "LIGHT_GRASS":2,
+        "BRICK":3,
+        "PATH":4,
+        "ICE":5,
     }
     display = pygame.display.set_mode((800,800))
     clock = pygame.time.Clock()

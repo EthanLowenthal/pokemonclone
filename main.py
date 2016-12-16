@@ -5,8 +5,6 @@ plt.rcdefaults()
 import numpy as np
 import matplotlib.pyplot as plt
 import sys
-import pyglet
-window = pyglet.window.Window()
 
 
 planets = {}
@@ -18,10 +16,10 @@ print('Gathering Data')
 pokemon = 'http://pokeapi.co/api/v2/pokemon/'
 star_wars = 'http://swapi.co/api/people/'
 while x:
-    resp = get(star_wars + str(num))
+    resp = get(pokemon + str(num))
     try:
         try:
-            print(loads(resp.text)['name'] + ' -- ' + str(num))
+            print(loads(resp.text)['name'] + ' = ' + "'" + pokemon + str(num) + "'")
         except:
             print('Not Found')
 
