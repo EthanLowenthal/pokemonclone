@@ -15,14 +15,22 @@ class Player:
         self.speed = 5
 
     def change_world(self):
-        # for i in range(200):
-        #     pygame.draw.circle(world, colors["BLACK"], (400, 400), i)
-        #     print(i)
-        #     time.sleep(0.4)
-        display.fill(colors["BLACK"])
-        world.fill(colors["BLACK"])
-        pygame.display.flip()
         time.sleep(0.7)
+
+        for i in range(0, 150, 2):
+            overlay.fill(colors["BLACK"])
+            overlay.set_alpha(i)
+            display.blit(overlay,(0,0))
+            pygame.display.flip()
+        for i in range(150, 0, -2):
+            draw_map()
+            display.blit(world, (-self.rect.x / 2 + 150, -self.rect.y / 2 + 150))
+            overlay.fill(colors["BLACK"])
+            overlay.set_alpha(i)
+            display.blit(overlay,(0,0))
+            pygame.display.flip()
+            # time.sleep(0.1)
+
 
     def move(self,camera_pos):
         global map
@@ -44,50 +52,54 @@ class Player:
 
 
         if self.rect.x < 0:
-            if map == left:
+            if map == left or map == up or map == down:
                 self.rect.x = 0
-            elif map == mid or map == up or map == down:
+            elif map == mid:
                 map = left
                 self.rect.x = 984
+                self.change_world()
             elif map == right:
                 map = mid
                 self.rect.x = 984
-            self.change_world()
+                self.change_world()
 
 
         elif self.rect.x > 984:
-            if map == right:
+            if map == right or map == up or map == down:
                 self.rect.x = 984
-            elif map == mid or map == up or map == down:
+            elif map == mid:
                 map = right
                 self.rect.x = 0
+                self.change_world()
             elif map == left:
                 map = mid
                 self.rect.x = 0
-            self.change_world()
+                self.change_world()
 
         if self.rect.y < 0:
             self.rect.y = 984
-            if map == up:
+            if map == up or map == left or map == right:
                 self.rect.y = 0
                 pos_y = camera_pos[1]
-            elif map == mid or map == left or map == right:
+            elif map == mid:
                 map = up
+                self.change_world()
             elif map == down:
                 map = mid
-            self.change_world()
+                self.change_world()
 
         elif self.rect.y > 984:
 
             global map
             self.rect.y = 0
-            if map == down:
+            if map == down or map == left or map == right:
                 self.rect.y = 984
-            elif map == mid or map == left or map == right:
+            elif map == mid:
                 map = down
+                self.change_world()
             elif map == up:
                 map = mid
-            self.change_world()
+                self.change_world()
 
         pos_x, pos_y = -self.rect.x/2 + 150, -self.rect.y/2 + 150
         return (pos_x, pos_y), (self.rect.x, self.rect.y)
@@ -104,7 +116,6 @@ def draw_legend():
     # pygame.draw.rect(display, colors["DARK_RED"], ((32, 92), (25, 25)))
     # pygame.draw.rect(display, colors["DARK_RED"], ((92, 32), (25, 25)))
     # pygame.draw.rect(display, colors["DARK_RED"], ((92, 92), (25, 25)))
-
 
     pygame.draw.rect(display, colors["DARK_RED"], ((32, 62), (25, 25)))  # left
     pygame.draw.rect(display, colors["DARK_RED"], ((62, 32), (25, 25)))  # up
@@ -181,24 +192,24 @@ def Main(display,clock, world):
 
         draw_legend()
 
-        chance = random.randint(1, 1000)
-        if chance >= 999 and current_tile == tiles["GRASS"] and camera_pos != last_cam_pos:
-            pokemon = random.choice(grass_pokemon)
-            display.fill(colors["PINK"])
-            pygame.display.flip()
-            resp = requests.get(pokemon)
-            print('You encountered a ' + json.loads(resp.text)['name'])
-            def selection():
-                selection = input('Make a selection:\n1: Run 2: Fight\n')
-                if selection == '1':
-                    print('You ran away!')
-                elif selection == '2':
-                    fight()
-                else:
-                    print('Command not recongnised')
-                    selection()
-
-            selection()
+        # chance = random.randint(1, 1000)
+        # if chance >= 999 and current_tile == tiles["GRASS"] and camera_pos != last_cam_pos:
+        #     pokemon = random.choice(grass_pokemon)
+        #     display.fill(colors["PINK"])
+        #     pygame.display.flip()
+        #     resp = requests.get(pokemon)
+        #     print('You encountered a ' + json.loads(resp.text)['name'])
+        #     def selection():
+        #         selection = input('Make a selection:\n1: Run 2: Fight\n')
+        #         if selection == '1':
+        #             print('You ran away!')
+        #         elif selection == '2':
+        #             fight()
+        #         else:
+        #             print('Command not recongnised')
+        #             selection()
+        #
+        #     selection()
 
         last_cam_pos = camera_pos
 
@@ -233,7 +244,8 @@ if __name__ in "__main__":
     }
     display = pygame.display.set_mode((800,800))
     clock = pygame.time.Clock()
-    world = pygame.Surface((1000,1000))
+    world = pygame.Surface((1000, 1000))
+    overlay = pygame.Surface((800, 800))
 
 
     Main(display,clock,world)
