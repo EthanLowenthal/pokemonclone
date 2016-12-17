@@ -1,9 +1,15 @@
-import pygame, time, random, json, requests
+import sys
+if sys.maxsize.bit_length() == 63: print('ONLY RUNS IN 32 BIT PYTHON: SHUTTING DOWN') & quit()
+try:import pygame, time, random, json, requests
+except:print('A REQIERED PACKAGE IS NOT INSTALLED: SHUTTING DOWN') & quit()
+try: import maps, pokemon
+except: print('YOU MAY HAVE DELETED IMPORTANT FILES: SHUTTING DOWN') & quit()
 from maps import *
 from pokemon import *
 
-pygame.init()
 
+pygame.init()
+pygame.font.init()
 # map = tutorial
 map = mid
 
@@ -17,19 +23,20 @@ class Player:
     def change_world(self):
         time.sleep(0.7)
 
-        for i in range(0, 150, 2):
+        for i in range(0, 250, 2):
             overlay.fill(colors["BLACK"])
             overlay.set_alpha(i)
             display.blit(overlay,(0,0))
             pygame.display.flip()
-        for i in range(150, 0, -2):
-            draw_map()
-            display.blit(world, (-self.rect.x / 2 + 150, -self.rect.y / 2 + 150))
-            overlay.fill(colors["BLACK"])
-            overlay.set_alpha(i)
-            display.blit(overlay,(0,0))
-            pygame.display.flip()
-            # time.sleep(0.1)
+
+        # for i in range(250, 0, -2):
+        #     draw_map()
+        #     display.blit(world, (-self.rect.x / 2 + 150, -self.rect.y / 2 + 150))
+        #     overlay.fill(colors["BLACK"])
+        #     overlay.set_alpha(i)
+        #     display.blit(overlay,(0,0))
+        #     pygame.display.flip()
+        #     # time.sleep(0.1)
 
 
     def move(self,camera_pos):
@@ -89,8 +96,6 @@ class Player:
                 self.change_world()
 
         elif self.rect.y > 984:
-
-            global map
             self.rect.y = 0
             if map == down or map == left or map == right:
                 self.rect.y = 984
