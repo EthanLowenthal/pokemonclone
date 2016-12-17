@@ -9,9 +9,16 @@ from pokemon import *
 
 
 pygame.init()
-pygame.font.init()
 # map = tutorial
 map = mid
+# initialize font; must be called after 'pygame.init()' to avoid 'Font not Initialized' error
+
+
+def displayText(text, font=None, size=15):
+    myfont = pygame.font.SysFont("comicsans", 40)
+    label = myfont.render(text, 1, (255, 255, 0), (0, 0, 0))
+    display.blit(label, (100, 100))
+    pygame.display.flip()
 
 class Player:
     def __init__(self):
@@ -217,6 +224,7 @@ def Main(display,clock, world):
         #     selection()
 
         last_cam_pos = camera_pos
+        displayText('Center')
 
         pygame.display.flip()
 
