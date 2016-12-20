@@ -167,24 +167,25 @@ def draw_legend():
     elif map == mid:
         pygame.draw.rect(display, colors["YELLOW"], ((62, 62), (25, 25)))  # mid
 
-def draw_map():
+def draw_map(cam_pos):
     for pos2, line in enumerate(map):
         for pos1, wall in enumerate(line):
-            if wall == tiles["WATER"]:
-                world.blit(pygame.image.load('water.jpg'), (pos1 * 50, pos2 * 50))
-                # pygame.draw.rect(world, colors["BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
-            if wall == tiles["LIGHT_GRASS"]:
-                # world.blit(pygame.image.load('grass.png'), (pos1 * 50, pos2 * 50))
-                pygame.draw.rect(world, colors["LIGHT_GREEN"], ((pos1 * 50, pos2 * 50), (50, 50)))
-            if wall == tiles["BRICK"]:
-                #world.blit(pygame.image.load('thatch.jpg'), (pos1 * 50, pos2 * 50))
-                pygame.draw.rect(world, colors["DARK_RED"], ((pos1 * 50, pos2 * 50), (50, 50)))
-            if wall == tiles["PATH"]:
-                world.blit(pygame.image.load('stone.jpg'), (pos1 * 50, pos2 * 50))
-                #pygame.draw.rect(world, colors["GREY"], ((pos1 * 50, pos2 * 50), (50, 50)))
-            if wall == tiles["ICE"]:
-                pygame.draw.rect(world, colors["LIGHT_BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
-
+            if pos1 * 50 > -cam_pos[0] - 50 and pos2 * 50 > -cam_pos[1] - 50:
+                if pos1 * 50 < -cam_pos[0] + 800 and pos2 * 50 < -cam_pos[1] + 800:
+                    if wall == tiles["WATER"]:
+                        world.blit(pygame.image.load('water.jpg'), (pos1 * 50, pos2 * 50))
+                        # pygame.draw.rect(world, colors["BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
+                    if wall == tiles["LIGHT_GRASS"]:
+                        # world.blit(pygame.image.load('grass.png'), (pos1 * 50, pos2 * 50))
+                        pygame.draw.rect(world, colors["LIGHT_GREEN"], ((pos1 * 50, pos2 * 50), (50, 50)))
+                    if wall == tiles["BRICK"]:
+                        #world.blit(pygame.image.load('thatch.jpg'), (pos1 * 50, pos2 * 50))
+                        pygame.draw.rect(world, colors["DARK_RED"], ((pos1 * 50, pos2 * 50), (50, 50)))
+                    if wall == tiles["PATH"]:
+                        world.blit(pygame.image.load('stone.jpg'), (pos1 * 50, pos2 * 50))
+                        #pygame.draw.rect(world, colors["GREY"], ((pos1 * 50, pos2 * 50), (50, 50)))
+                    if wall == tiles["ICE"]:
+                        pygame.draw.rect(world, colors["LIGHT_BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
 
 
 def fight():
@@ -217,7 +218,6 @@ def Main():
     camera_pos = (192,192)
     global last_cam_pos
     last_cam_pos = camera_pos
-    img = pygame.image.load('water.jpg')
     while True:
         clock.tick(60)
         for event in pygame.event.get():
@@ -226,7 +226,6 @@ def Main():
                 return
 
         camera_pos, player_pos = player.move(camera_pos)
-
         display.fill(colors["WORLD"])
         world.fill(colors["DARK_GREEN"])
 
@@ -239,7 +238,7 @@ def Main():
         else:
             player.speed = 3
 
-        draw_map()
+        draw_map(camera_pos)
 
         player.render(world)
         display.blit(world,camera_pos)
