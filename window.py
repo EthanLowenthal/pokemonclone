@@ -14,16 +14,14 @@ pygame.init()
 map = mid
 
 textlog = []
-myfont = pygame.font.SysFont("comicsans", 60)
 
-textlog.append(('hello', time.strftime("%I:%M:%S")))
-
-def displayText(font=None, size=15):
-    global textlog, newtext
-    for pos, text in enumerate(textlog):
-        label = myfont.render('['+text[1]+']'+' - '+ text[0]+' ', 1, (255, 255, 255), (0, 0, 0))
-        label.set_alpha(150)
-        display.blit(label, (0, 800 - ((pos + 1) * 40)))
+def displayText(font=None, size=30):
+    myfont = pygame.font.SysFont("comicsans", size)
+    for pos, text in enumerate(reversed(textlog)):
+        if pos <= 6:
+            label = myfont.render('['+text[1]+']'+' - '+ text[0]+' ', 1, (255, 255, 255), (0, 0, 0))
+            label.set_alpha(150)
+            display.blit(label, (0, 800 - (pos * size)))
     pygame.display.flip()
 
 class Player:
@@ -210,24 +208,17 @@ def Main(display,clock, world):
 
         draw_legend()
 
-        # chance = random.randint(1, 1000)
-        # if chance >= 999 and current_tile == tiles["GRASS"] and camera_pos != last_cam_pos:
-        #     pokemon = random.choice(grass_pokemon)
-        #     display.fill(colors["PINK"])
-        #     pygame.display.flip()
-        #     resp = requests.get(pokemon)
-        #     print('You encountered a ' + json.loads(resp.text)['name'])
-        #     def selection():
-        #         selection = input('Make a selection:\n1: Run 2: Fight\n')
-        #         if selection == '1':
-        #             print('You ran away!')
-        #         elif selection == '2':
-        #             fight()
-        #         else:
-        #             print('Command not recongnised')
-        #             selection()
-        #
-        #     selection()
+        chance = random.randint(1, 1000)
+
+        global pokemon
+        if chance >= 998 and current_tile == tiles["GRASS"] or current_tile == tiles["WATER"] and camera_pos != last_cam_pos:
+            if current_tile == tiles["GRASS"]:
+                pokemon = random.choice(grass_pokemon)
+            if current_tile == tiles["WATER"]:
+                pokemon = random.choice(water_pokemon)
+            resp = requests.get(pokemon)
+            textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
+
 
         last_cam_pos = camera_pos
         displayText()
