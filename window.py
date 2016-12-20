@@ -11,6 +11,7 @@ from pygame.locals import*
 
 
 pygame.init()
+
 # map = tutorial
 map = mid
 
@@ -38,7 +39,7 @@ def button(msg,x,y,w,h,ic,ac,action=None):
 
 def displayText(font=None, size=30):
 
-    myfont = pygame.font.SysFont("comicsans", size)
+    myfont = pygame.font.SysFont(None, size)
     for pos, text in enumerate(reversed(textlog)):
         if pos <= 6:
             label = myfont.render('['+text[1]+']'+' - '+ text[0]+' ', 1, (255, 255, 255), (0, 0, 0))
@@ -138,6 +139,12 @@ class Player:
 
 
 def draw_legend():
+
+    myfont = pygame.font.SysFont(None, 40)
+    label = myfont.render('FPS: ' + str(clock.get_fps())[:4], 1, (255, 255, 255), (0, 0, 0))
+    label.set_alpha(150)
+    display.blit(label, (600, 10))
+
     pygame.draw.rect(display, colors["WHITE"], ((15, 15), (120, 120)))
     pygame.draw.rect(display, colors["LIGHT_BLUE"], ((25, 25), (100, 100)))
 
@@ -247,6 +254,7 @@ def Main():
         get_pokemon()
         displayText()
         pygame.display.flip()
+
 
 
 def game_intro():
