@@ -7,7 +7,7 @@ git clone https://github.com/kehillah-coding-2017/json-api-EthanLowenthal.git
 ```
 
 ####Installig Pygame
-#####Windows & Unix
+#####Windows, Unix, Nokia, BeOS, Android (not mac)
 [Pygame Downloads](http://www.pygame.org/download.shtml)
 
 #####Mac
