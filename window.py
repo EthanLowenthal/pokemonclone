@@ -9,9 +9,7 @@ from maps import *
 from pokemon import *
 from pygame.locals import*
 
-
 optimize = True
-
 pygame.init()
 
 # map = tutorial
@@ -60,7 +58,7 @@ class Player:
         time.sleep(0.7)
         for i in range(0, 250, 2):
             overlay.fill(colors["BLACK"])
-            overlay.set_alpha(1)
+            overlay.set_alpha(i)
             display.blit(overlay,(0,0))
             pygame.display.flip()
 
@@ -182,24 +180,24 @@ def draw_map(cam_pos):
                 if pos1 * 50 < -cam_pos[0] + width and pos2 * 50 < -cam_pos[1] + height:
                     if wall == tiles["WATER"]:
                         if not optimize:
-                            world.blit(pygame.image.load('water.jpg'), (pos1 * 50, pos2 * 50))
+                            world.blit(pygame.image.load('./images/water.jpg'), (pos1 * 50, pos2 * 50))
                         else:
                             pygame.draw.rect(world, colors["BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
                     if wall == tiles["LIGHT_GRASS"]:
                         if not optimize:
-                            world.blit(pygame.image.load('grass.png'), (pos1 * 50, pos2 * 50))
+                            world.blit(pygame.image.load('./images/grass.png'), (pos1 * 50, pos2 * 50))
                         else:
                             pygame.draw.rect(world, colors["LIGHT_GREEN"], ((pos1 * 50, pos2 * 50), (50, 50)))
                     elif wall == tiles["GRASS"] and not optimize:
-                        world.blit(pygame.image.load('grass.png'), (pos1 * 50, pos2 * 50))
+                        world.blit(pygame.image.load('./images/grass.png'), (pos1 * 50, pos2 * 50))
                     elif wall == tiles["BRICK"]:
                         if not optimize:
-                            world.blit(pygame.image.load('thatch.jpg'), (pos1 * 50, pos2 * 50))
+                            world.blit(pygame.image.load('./images/thatch.jpg'), (pos1 * 50, pos2 * 50))
                         else:
                             pygame.draw.rect(world, colors["DARK_RED"], ((pos1 * 50, pos2 * 50), (50, 50)))
                     elif wall == tiles["PATH"]:
                         if not optimize:
-                            world.blit(pygame.image.load('stone.jpg'), (pos1 * 50, pos2 * 50))
+                            world.blit(pygame.image.load('./images/stone.jpg'), (pos1 * 50, pos2 * 50))
                         else:
                             pygame.draw.rect(world, colors["GREY"], ((pos1 * 50, pos2 * 50), (50, 50)))
                     elif wall == tiles["ICE"]:
@@ -305,8 +303,8 @@ def game_intro():
         display.blit(TextSurf, TextRect)
 
 
-        button("GO!", 150, 450, 100, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], display,0,0, Main)
-        button("Quit", 550, 450, 100, 50, colors['DARK_RED'], colors['RED'], display,0,0, quit)
+        button("Start!", 150, 450, 200, 100, colors['DARK_GREEN'], colors['LIGHT_GREEN'], display,0,0, Main)
+        button("Quit", 450, 450, 200, 100, colors['DARK_RED'], colors['RED'], display,0,0, quit)
 
         pygame.display.update()
         clock.tick(15)
@@ -348,6 +346,7 @@ if __name__ in "__main__":
     camera_pos = (192,192)
     last_cam_pos = camera_pos
     print(width, height)
+
 
     intro = True
 
