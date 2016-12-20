@@ -186,6 +186,7 @@ def draw_map():
                 pygame.draw.rect(world, colors["LIGHT_BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
 
 
+
 def fight():
     pass
 
