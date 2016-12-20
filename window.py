@@ -15,6 +15,26 @@ map = mid
 
 textlog = []
 
+
+def button(msg,x,y,w,h,ic,ac,action=None):
+    mouse = pygame.mouse.get_pos()
+    click = pygame.mouse.get_pressed()
+    if x+w > mouse[0] > x and y+h > mouse[1] > y:
+        pygame.draw.rect(display, ac,(x,y,w,h))
+        if click[0] == 1 and action != None:
+            global intro
+            intro = False
+            action()
+    else:
+        pygame.draw.rect(display, ic,(x,y,w,h))
+    smallText = pygame.font.SysFont("comicsansms",20)
+    textSurf = smallText.render(msg, True, colors['BLACK'])
+    textRect = textSurf.get_rect()
+    textRect.center = ( (x+(w/2)), (y+(h/2)) )
+    display.blit(textSurf, textRect)
+
+
+
 def displayText(font=None, size=30):
 
     myfont = pygame.font.SysFont("comicsans", size)
@@ -180,7 +200,9 @@ def get_pokemon():
         last_cam_pos = camera_pos
 
 
-def Main(display,clock, world):
+def Main():
+    print('hi')
+    global display,clock, world
     for x in range(10):
         pygame.draw.rect(world,colors["BLUE"],((x * 100,x * 100),(20,20)))
 
@@ -189,7 +211,7 @@ def Main(display,clock, world):
     camera_pos = (192,192)
     global last_cam_pos
     last_cam_pos = camera_pos
-
+    game_intro()
     while True:
         clock.tick(60)
         for event in pygame.event.get():
@@ -223,6 +245,28 @@ def Main(display,clock, world):
         pygame.display.flip()
 
 
+def game_intro():
+    global intro
+    while intro:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+
+        display.fill(colors['WHITE'])
+        largeText = pygame.font.SysFont(None, 115)
+        TextSurf = largeText.render('Pokemon Clone', True, colors['BLACK'])
+        TextRect = TextSurf.get_rect()
+        TextRect.center = ((800 / 2), (800 / 2))
+        display.blit(TextSurf, TextRect)
+
+
+        button("GO!", 150, 450, 100, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], Main)
+        button("Quit", 550, 450, 100, 50, colors['DARK_RED'], colors['RED'], quit)
+
+        pygame.display.update()
+        clock.tick(15)
+
 if __name__ in "__main__":
     global colors, tiles
     colors = {
@@ -249,10 +293,12 @@ if __name__ in "__main__":
         "PATH":4,
         "ICE":5,
     }
+    global display, clock, world, intro
     display = pygame.display.set_mode((800,800))
     clock = pygame.time.Clock()
     world = pygame.Surface((1000, 1000))
     overlay = pygame.Surface((800, 800))
 
+    intro = True
 
-    Main(display,clock,world)
+    game_intro()
