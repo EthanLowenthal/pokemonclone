@@ -10,6 +10,8 @@ from pokemon import *
 from pygame.locals import*
 
 
+optimize = True
+
 pygame.init()
 
 # map = tutorial
@@ -18,10 +20,10 @@ map = mid
 textlog = []
 
 
-def button(msg,x,y,w,h,ic,ac,action=None):
+def button(msg,x,y,w,h,ic,ac,display,sufcoordsx,sufcoordsy, action=None):
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
-    if x+w > mouse[0] > x and y+h > mouse[1] > y:
+    if x+w+sufcoordsx > mouse[0] > x+sufcoordsx and y+h+sufcoordsy > mouse[1] > y+sufcoordsy:
         pygame.draw.rect(display, ac,(x,y,w,h))
         if click[0] == 1 and action != None:
             global intro
@@ -56,10 +58,9 @@ class Player:
 
     def change_world(self):
         time.sleep(0.7)
-
         for i in range(0, 250, 2):
             overlay.fill(colors["BLACK"])
-            overlay.set_alpha(i)
+            overlay.set_alpha(1)
             display.blit(overlay,(0,0))
             pygame.display.flip()
 
@@ -178,25 +179,33 @@ def draw_map(cam_pos):
     for pos2, line in enumerate(map):
         for pos1, wall in enumerate(line):
             if pos1 * 50 > -cam_pos[0] - 50 and pos2 * 50 > -cam_pos[1] - 50:
-                if pos1 * 50 < -cam_pos[0] + 800 and pos2 * 50 < -cam_pos[1] + 800:
+                if pos1 * 50 < -cam_pos[0] + width and pos2 * 50 < -cam_pos[1] + height:
                     if wall == tiles["WATER"]:
-                        world.blit(pygame.image.load('water.jpg'), (pos1 * 50, pos2 * 50))
-                        # pygame.draw.rect(world, colors["BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
+                        if not optimize:
+                            world.blit(pygame.image.load('water.jpg'), (pos1 * 50, pos2 * 50))
+                        else:
+                            pygame.draw.rect(world, colors["BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
                     if wall == tiles["LIGHT_GRASS"]:
-                        # world.blit(pygame.image.load('grass.png'), (pos1 * 50, pos2 * 50))
-                        pygame.draw.rect(world, colors["LIGHT_GREEN"], ((pos1 * 50, pos2 * 50), (50, 50)))
-                    if wall == tiles["BRICK"]:
-                        #world.blit(pygame.image.load('thatch.jpg'), (pos1 * 50, pos2 * 50))
-                        pygame.draw.rect(world, colors["DARK_RED"], ((pos1 * 50, pos2 * 50), (50, 50)))
-                    if wall == tiles["PATH"]:
-                        world.blit(pygame.image.load('stone.jpg'), (pos1 * 50, pos2 * 50))
-                        #pygame.draw.rect(world, colors["GREY"], ((pos1 * 50, pos2 * 50), (50, 50)))
-                    if wall == tiles["ICE"]:
+                        if not optimize:
+                            world.blit(pygame.image.load('grass.png'), (pos1 * 50, pos2 * 50))
+                        else:
+                            pygame.draw.rect(world, colors["LIGHT_GREEN"], ((pos1 * 50, pos2 * 50), (50, 50)))
+                    elif wall == tiles["GRASS"] and not optimize:
+                        world.blit(pygame.image.load('grass.png'), (pos1 * 50, pos2 * 50))
+                    elif wall == tiles["BRICK"]:
+                        if not optimize:
+                            world.blit(pygame.image.load('thatch.jpg'), (pos1 * 50, pos2 * 50))
+                        else:
+                            pygame.draw.rect(world, colors["DARK_RED"], ((pos1 * 50, pos2 * 50), (50, 50)))
+                    elif wall == tiles["PATH"]:
+                        if not optimize:
+                            world.blit(pygame.image.load('stone.jpg'), (pos1 * 50, pos2 * 50))
+                        else:
+                            pygame.draw.rect(world, colors["GREY"], ((pos1 * 50, pos2 * 50), (50, 50)))
+                    elif wall == tiles["ICE"]:
                         pygame.draw.rect(world, colors["LIGHT_BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
 
 
-def fight():
-    pass
 
 def get_pokemon():
     chance = random.randint(1, 1000)
@@ -211,26 +220,47 @@ def get_pokemon():
             return
         resp = requests.get(pokemon)
         textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
-        last_cam_pos = camera_pos
 
+def draw_menu():
+    pygame.draw.rect(pause_surf, colors['YELLOW'],(0, 0, 350, 500))
+    pygame.draw.rect(pause_surf, colors['WHITE'], (10, 10, 330, 480))
+    button('Resume', 100, 40, 150, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width/2)-175, 100, Main)
+    button("Quit", 100, 100, 150, 50, colors['DARK_RED'], colors['RED'], pause_surf, (width/2)-175, 100, quit)
+    display.blit(pause_surf, ((width/2)-175, 100))
+
+def pause(player):
+    overlay.fill(colors['BLACK'])
+    pygame.display.set_caption('Ethan\'s Pokemon Clone [PAUSED]')
+    while True:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == K_ESCAPE:
+                    Main()
+
+        player.render(world)
+        display.blit(world, camera_pos)
+        overlay.fill(colors['BLACK'])
+        draw_legend()
+        overlay.set_alpha(200)
+        display.blit(overlay, (0,0))
+        draw_menu()
+        pygame.display.flip()
 
 def Main():
-    print('hi')
-    global display,clock, world
-    for x in range(10):
-        pygame.draw.rect(world,colors["BLUE"],((x * 100,x * 100),(20,20)))
-
-    player = Player()
-    global camera_pos
-    camera_pos = (192,192)
-    global last_cam_pos
-    last_cam_pos = camera_pos
+    global display, clock, world, intro, camera_pos, last_cam_pos
+    pygame.display.set_caption('Ethan\'s Pokemon Clone')
     while True:
         clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 return
+            if event.type == pygame.KEYDOWN:
+                if event.key == K_ESCAPE:
+                    pause(player)
 
         camera_pos, player_pos = player.move(camera_pos)
         display.fill(colors["WORLD"])
@@ -255,6 +285,8 @@ def Main():
         displayText()
         pygame.display.flip()
 
+        last_cam_pos = camera_pos
+
 
 
 def game_intro():
@@ -269,12 +301,12 @@ def game_intro():
         largeText = pygame.font.SysFont(None, 115)
         TextSurf = largeText.render('Pokemon Clone', True, colors['BLACK'])
         TextRect = TextSurf.get_rect()
-        TextRect.center = ((800 / 2), (360))
+        TextRect.center = ((width / 2), (360))
         display.blit(TextSurf, TextRect)
 
 
-        button("GO!", 150, 450, 100, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], Main)
-        button("Quit", 550, 450, 100, 50, colors['DARK_RED'], colors['RED'], quit)
+        button("GO!", 150, 450, 100, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], display,0,0, Main)
+        button("Quit", 550, 450, 100, 50, colors['DARK_RED'], colors['RED'], display,0,0, quit)
 
         pygame.display.update()
         clock.tick(15)
@@ -305,11 +337,17 @@ if __name__ in "__main__":
         "PATH":4,
         "ICE":5,
     }
-    global display, clock, world, intro
+    global display, clock, world, intro, camera_pos, last_cam_pos, width, height
     display = pygame.display.set_mode((800,800))
+    width, height = pygame.display.get_surface().get_size()
     clock = pygame.time.Clock()
     world = pygame.Surface((1000, 1000))
-    overlay = pygame.Surface((800, 800))
+    overlay = pygame.Surface((width, height))
+    pause_surf = pygame.Surface((350, 500))
+    player = Player()
+    camera_pos = (192,192)
+    last_cam_pos = camera_pos
+    print(width, height)
 
     intro = True
 
