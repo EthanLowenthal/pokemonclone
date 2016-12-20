@@ -1,6 +1,7 @@
-import sys
-if sys.maxsize.bit_length() == 63: print('ONLY RUNS IN 32 BIT PYTHON: SHUTTING DOWN') & quit()
-try:import pygame, time, random, json, requests
+# import sys
+# if sys.maxsize.bit_length() == 63: print('ONLY RUNS IN 32 BIT PYTHON: SHUTTING DOWN') & quit()
+import pygame, time, random, json, requests
+try:pass
 except:print('A REQIERED PACKAGE IS NOT INSTALLED: SHUTTING DOWN') & quit()
 try: import maps, pokemon
 except: print('YOU MAY HAVE DELETED IMPORTANT FILES: SHUTTING DOWN') & quit()
@@ -11,13 +12,18 @@ from pokemon import *
 pygame.init()
 # map = tutorial
 map = mid
-# initialize font; must be called after 'pygame.init()' to avoid 'Font not Initialized' error
 
+textlog = []
+myfont = pygame.font.SysFont("comicsans", 60)
 
-def displayText(text, font=None, size=15):
-    myfont = pygame.font.SysFont("comicsans", 40)
-    label = myfont.render(text, 1, (255, 255, 0), (0, 0, 0))
-    display.blit(label, (100, 100))
+textlog.append(('hello', time.strftime("%I:%M:%S")))
+
+def displayText(font=None, size=15):
+    global textlog, newtext
+    for pos, text in enumerate(textlog):
+        label = myfont.render('['+text[1]+']'+' - '+ text[0]+' ', 1, (255, 255, 255), (0, 0, 0))
+        label.set_alpha(150)
+        display.blit(label, (0, 800 - ((pos + 1) * 40)))
     pygame.display.flip()
 
 class Player:
@@ -224,7 +230,7 @@ def Main(display,clock, world):
         #     selection()
 
         last_cam_pos = camera_pos
-        displayText('Center')
+        displayText()
 
         pygame.display.flip()
 
