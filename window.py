@@ -166,7 +166,7 @@ def fight():
 
 def get_pokemon():
     chance = random.randint(1, 1000)
-    global pokemon, camera_pos, last_cam_pos, current_tile
+    global pokemon, textlog, last_cam_pos
     if chance >= 998 and camera_pos != last_cam_pos:
         if current_tile == tiles["GRASS"]:
             pokemon = random.choice(grass_pokemon)
