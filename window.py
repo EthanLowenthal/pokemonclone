@@ -7,6 +7,7 @@ try: import maps, pokemon
 except: print('YOU MAY HAVE DELETED IMPORTANT FILES: SHUTTING DOWN') & quit()
 from maps import *
 from pokemon import *
+from pygame.locals import*
 
 
 pygame.init()
@@ -27,7 +28,7 @@ def button(msg,x,y,w,h,ic,ac,action=None):
             action()
     else:
         pygame.draw.rect(display, ic,(x,y,w,h))
-    smallText = pygame.font.SysFont("comicsansms",20)
+    smallText = pygame.font.SysFont(None, 40)
     textSurf = smallText.render(msg, True, colors['BLACK'])
     textRect = textSurf.get_rect()
     textRect.center = ( (x+(w/2)), (y+(h/2)) )
@@ -170,13 +171,17 @@ def draw_map():
     for pos2, line in enumerate(map):
         for pos1, wall in enumerate(line):
             if wall == tiles["WATER"]:
-                pygame.draw.rect(world, colors["BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
+                world.blit(pygame.image.load('water.jpg'), (pos1 * 50, pos2 * 50))
+                # pygame.draw.rect(world, colors["BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
             if wall == tiles["LIGHT_GRASS"]:
+                # world.blit(pygame.image.load('grass.png'), (pos1 * 50, pos2 * 50))
                 pygame.draw.rect(world, colors["LIGHT_GREEN"], ((pos1 * 50, pos2 * 50), (50, 50)))
             if wall == tiles["BRICK"]:
+                #world.blit(pygame.image.load('thatch.jpg'), (pos1 * 50, pos2 * 50))
                 pygame.draw.rect(world, colors["DARK_RED"], ((pos1 * 50, pos2 * 50), (50, 50)))
             if wall == tiles["PATH"]:
-                pygame.draw.rect(world, colors["GREY"], ((pos1 * 50, pos2 * 50), (50, 50)))
+                world.blit(pygame.image.load('stone.jpg'), (pos1 * 50, pos2 * 50))
+                #pygame.draw.rect(world, colors["GREY"], ((pos1 * 50, pos2 * 50), (50, 50)))
             if wall == tiles["ICE"]:
                 pygame.draw.rect(world, colors["LIGHT_BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
 
@@ -211,7 +216,7 @@ def Main():
     camera_pos = (192,192)
     global last_cam_pos
     last_cam_pos = camera_pos
-    game_intro()
+    img = pygame.image.load('water.jpg')
     while True:
         clock.tick(60)
         for event in pygame.event.get():
@@ -241,7 +246,6 @@ def Main():
         draw_legend()
         get_pokemon()
         displayText()
-
         pygame.display.flip()
 
 
@@ -257,7 +261,7 @@ def game_intro():
         largeText = pygame.font.SysFont(None, 115)
         TextSurf = largeText.render('Pokemon Clone', True, colors['BLACK'])
         TextRect = TextSurf.get_rect()
-        TextRect.center = ((800 / 2), (800 / 2))
+        TextRect.center = ((800 / 2), (360))
         display.blit(TextSurf, TextRect)
 
 
