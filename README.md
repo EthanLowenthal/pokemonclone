@@ -1,4 +1,4 @@
-#Pokemon Thing
+#Pokemon Game
 ####A game useing the [pokemon api](http://pokeapi.co/)
 
 ###Getting
@@ -9,7 +9,7 @@ Installing pygame is a major pain in the ass on mac. I fugured it out, so you ca
 
 [here some dude explained it pretty well](http://brysonpayne.com/2015/01/10/setting-up-pygame-on-a-mac/)
 
-otherwise:
+for the other packages:
 ```sh
 pip install -r reqirements.txt
 ```
@@ -18,4 +18,6 @@ pip install -r reqirements.txt
 ```sh
 arch -32 python window.py 
 ```
-(it has to run in 32 bit for text to work)
+(it has to run in a 32 bit architecture)
+
+####I did not write the code for the srolling screen but other than that, I created the maps and pretty much every thing else. 
