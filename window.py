@@ -1,5 +1,5 @@
-# import sys
-# if sys.maxsize.bit_length() == 63: print('ONLY RUNS IN 32 BIT PYTHON: SHUTTING DOWN') & quit()
+import sys
+if sys.maxsize.bit_length() == 63: print('ONLY RUNS IN 32 BIT PYTHON: SHUTTING DOWN') & quit()
 import pygame, time, random, json, requests
 try:pass
 except:print('A REQIERED PACKAGE IS NOT INSTALLED: SHUTTING DOWN') & quit()
@@ -16,6 +16,7 @@ map = mid
 textlog = []
 
 def displayText(font=None, size=30):
+
     myfont = pygame.font.SysFont("comicsans", size)
     for pos, text in enumerate(reversed(textlog)):
         if pos <= 6:
@@ -39,15 +40,6 @@ class Player:
             overlay.set_alpha(i)
             display.blit(overlay,(0,0))
             pygame.display.flip()
-
-        # for i in range(250, 0, -2):
-        #     draw_map()
-        #     display.blit(world, (-self.rect.x / 2 + 150, -self.rect.y / 2 + 150))
-        #     overlay.fill(colors["BLACK"])
-        #     overlay.set_alpha(i)
-        #     display.blit(overlay,(0,0))
-        #     pygame.display.flip()
-        #     # time.sleep(0.1)
 
 
     def move(self,camera_pos):
@@ -172,13 +164,30 @@ def draw_map():
 def fight():
     pass
 
+def get_pokemon():
+    chance = random.randint(1, 1000)
+    global pokemon, camera_pos, last_cam_pos, current_tile
+    if chance >= 998 and camera_pos != last_cam_pos:
+        if current_tile == tiles["GRASS"]:
+            pokemon = random.choice(grass_pokemon)
+        if current_tile == tiles["WATER"]:
+            pokemon = random.choice(water_pokemon)
+        else:
+            last_cam_pos = camera_pos
+            return
+        resp = requests.get(pokemon)
+        textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
+        last_cam_pos = camera_pos
+
+
 def Main(display,clock, world):
     for x in range(10):
         pygame.draw.rect(world,colors["BLUE"],((x * 100,x * 100),(20,20)))
 
     player = Player()
+    global camera_pos
     camera_pos = (192,192)
-
+    global last_cam_pos
     last_cam_pos = camera_pos
 
     while True:
@@ -193,6 +202,7 @@ def Main(display,clock, world):
         display.fill(colors["WORLD"])
         world.fill(colors["DARK_GREEN"])
 
+        global current_tile
         current_tile = map[int(player_pos[1]/50)][int(player_pos[0]/50)]
         if current_tile == tiles["PATH"]:
             player.speed = 5
@@ -207,20 +217,7 @@ def Main(display,clock, world):
         display.blit(world,camera_pos)
 
         draw_legend()
-
-        chance = random.randint(1, 1000)
-
-        global pokemon
-        if chance >= 998 and current_tile == tiles["GRASS"] or current_tile == tiles["WATER"] and camera_pos != last_cam_pos:
-            if current_tile == tiles["GRASS"]:
-                pokemon = random.choice(grass_pokemon)
-            if current_tile == tiles["WATER"]:
-                pokemon = random.choice(water_pokemon)
-            resp = requests.get(pokemon)
-            textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
-
-
-        last_cam_pos = camera_pos
+        get_pokemon()
         displayText()
 
         pygame.display.flip()
