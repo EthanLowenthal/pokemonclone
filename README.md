@@ -25,8 +25,8 @@ pip install -r reqirements.txt
 
 ###Running
 ```sh
-arch -32 python window.py 
+arch -32 python2 window.py 
 ```
-**(it has to run in a 32 bit architecture)**
+**(it has to run in a 32 bit architecture and is only tested in python2)**
 
 ####I did not write the code in gui.py but other than that, I created pretty much every thing else. 
