@@ -37,3 +37,9 @@ Stuff I take inspiration (and sometimes code) from:
 [battles](https://github.com/ThomasDubyak/pykemon)
 
 [text input](https://github.com/NSasquatch/pygame-text-input)
+
+[buttons](https://pythonprogramming.net/pygame-button-function-events/)
+
+[more gui stuff](http://stackoverflow.com/questions/38551168/radio-button-in-pygame)
+
+[featured projects](http://www.pygame.org/hifi.html)
