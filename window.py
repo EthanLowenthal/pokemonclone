@@ -8,8 +8,10 @@ except: print('YOU MAY HAVE DELETED IMPORTANT FILES: SHUTTING DOWN') & quit()
 from maps import *
 from pokemon import *
 from pygame.locals import*
+from gui import *
 
 optimize = True
+ingame = False
 pygame.init()
 
 # map = tutorial
@@ -17,24 +19,21 @@ map = mid
 
 textlog = []
 
+colors = {
+    "WHITE": (255, 255, 255),
+    "RED": (255, 0, 0),
+    "DARK_RED": (102, 0, 0),
+    "DARK_GREEN": (0, 102, 0),
+    "LIGHT_GREEN": (0, 170, 0),
+    "BLUE": (0, 0, 255),
+    "LIGHT_BLUE": (153, 255, 255),
+    "BLACK": (0, 0, 0),
+    "GREY": (64, 64, 64),
+    "WORLD": (25, 0, 51),
+    "YELLOW": (255, 255, 51),
+    "PINK": (153, 0, 153)
 
-def button(msg,x,y,w,h,ic,ac,display,sufcoordsx,sufcoordsy, action=None):
-    mouse = pygame.mouse.get_pos()
-    click = pygame.mouse.get_pressed()
-    if x+w+sufcoordsx > mouse[0] > x+sufcoordsx and y+h+sufcoordsy > mouse[1] > y+sufcoordsy:
-        pygame.draw.rect(display, ac,(x,y,w,h))
-        if click[0] == 1 and action != None:
-            global intro
-            intro = False
-            action()
-    else:
-        pygame.draw.rect(display, ic,(x,y,w,h))
-    smallText = pygame.font.SysFont(None, 40)
-    textSurf = smallText.render(msg, True, colors['BLACK'])
-    textRect = textSurf.get_rect()
-    textRect.center = ( (x+(w/2)), (y+(h/2)) )
-    display.blit(textSurf, textRect)
-
+}
 
 
 def displayText(font=None, size=30):
@@ -45,7 +44,6 @@ def displayText(font=None, size=30):
             label = myfont.render('['+text[1]+']'+' - '+ text[0]+' ', 1, (255, 255, 255), (0, 0, 0))
             label.set_alpha(150)
             display.blit(label, (0, 800 - (pos * size)))
-    pygame.display.flip()
 
 class Player:
     def __init__(self):
@@ -219,12 +217,31 @@ def get_pokemon():
         resp = requests.get(pokemon)
         textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
 
-def draw_menu():
+
+def pause_menu():
     pygame.draw.rect(pause_surf, colors['YELLOW'],(0, 0, 350, 500))
     pygame.draw.rect(pause_surf, colors['WHITE'], (10, 10, 330, 480))
-    button('Resume', 100, 40, 150, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width/2)-175, 100, Main)
-    button("Quit", 100, 100, 150, 50, colors['DARK_RED'], colors['RED'], pause_surf, (width/2)-175, 100, quit)
+    myfont = pygame.font.SysFont(None, 60)
+    label = myfont.render('Paused', 1, (0, 0, 0))
+    pause_surf.blit(label, (100, 30))
+    button('Resume', 100, 100, 150, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width/2)-175, 100, Main)
+    button("Quit", 100, 160, 150, 50, colors['DARK_RED'], colors['RED'], pause_surf, (width/2)-175, 100, quit)
+    button("Home", 100, 240, 150, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width / 2) - 175, 100, game_intro)
     display.blit(pause_surf, ((width/2)-175, 100))
+
+def settings_menu(check):
+    pygame.draw.rect(pause_surf, colors['YELLOW'], (0, 0, 350, 500))
+    pygame.draw.rect(pause_surf, colors['WHITE'], (10, 10, 330, 480))
+    myfont = pygame.font.SysFont(None, 60)
+    label = myfont.render('Settings', 1, (0, 0, 0))
+    pause_surf.blit(label, (85, 30))
+    check.render_checkbox()
+    if ingame:
+        button("Done", 250, 450, 100, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width / 2) - 175, 100, Main)
+    else:
+        button("Done", 250, 450, 100, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width / 2) - 175, 100, game_intro)
+    display.blit(pause_surf, ((width / 2) - 175, 100))
+
 
 def pause(player):
     overlay.fill(colors['BLACK'])
@@ -244,13 +261,15 @@ def pause(player):
         draw_legend()
         overlay.set_alpha(200)
         display.blit(overlay, (0,0))
-        draw_menu()
+        pause_menu()
         pygame.display.flip()
 
 def Main():
     global display, clock, world, intro, camera_pos, last_cam_pos
     pygame.display.set_caption('Ethan\'s Pokemon Clone')
-    while True:
+    # if not ingame:
+    #     game_intro()
+    while ingame:
         clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
@@ -281,52 +300,76 @@ def Main():
         draw_legend()
         get_pokemon()
         displayText()
+        button("", width - 50, height - 50, 50, 50, colors['WHITE'], colors['WHITE'], display, 0, 0, settings)
+        display.blit(pygame.image.load('./images/settings.png'), (width - 50, height - 50))
         pygame.display.flip()
 
         last_cam_pos = camera_pos
 
 
+def settings():
+    overlay.fill(colors['BLACK'])
+    pygame.display.set_caption('Ethan\'s Pokemon Clone [PAUSED]')
+    check = Checkbox(pause_surf, 30, 100, color=colors['WHITE'], caption="Faster Graphics", outline_color=colors['BLACK'], text_offset=(100, 1), surf_offset=((width / 2) - 175, 100), font_size=30)
+    if optimize:
+        check.click = True
+        check.active = True
+    while True:
+        clock.tick(60)
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit()
+            check.update_checkbox(event)
+        if ingame:
+            player.render(world)
+            display.blit(world, camera_pos)
+            overlay.fill(colors['BLACK'])
+            draw_legend()
+        else:
+            draw_intro()
+        overlay.set_alpha(200)
+        display.blit(overlay, (0, 0))
+        settings_menu(check)
+        pygame.display.flip()
+        global optimize
+        if check.is_checked():
+            optimize = True
+        else:
+            optimize = False
+def StartGame():
+    global ingame
+    ingame = True
+    Main()
+
+def draw_intro():
+        display.fill((255,255,153))
+        largeText = pygame.font.SysFont(None, 115)
+        TextSurf = largeText.render('Pokemon Clone', True, colors['BLACK'])
+        TextRect = TextSurf.get_rect()
+        TextRect.center = ((width / 2), (260))
+        display.blit(TextSurf, TextRect)
+        global ingame
+        button("Start!", 150, 450, 200, 100, colors['DARK_GREEN'], colors['LIGHT_GREEN'], display,0,0, StartGame)
+        button("Quit", 450, 450, 200, 100, colors['DARK_RED'], colors['RED'], display,0,0, quit)
+        button("", width - 50, height - 50, 50, 50, colors['WHITE'], colors['WHITE'], display, 0, 0, settings)
+
+        display.blit(pygame.image.load('./images/settings.png'), (width - 50, height - 50))
 
 def game_intro():
-    global intro
+    pygame.display.set_caption('Ethan\'s Pokemon Clone')
+    global intro, ingame
+    ingame = False
     while intro:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 quit()
+        draw_intro()
+        pygame.display.flip()
 
-        display.fill(colors['WHITE'])
-        largeText = pygame.font.SysFont(None, 115)
-        TextSurf = largeText.render('Pokemon Clone', True, colors['BLACK'])
-        TextRect = TextSurf.get_rect()
-        TextRect.center = ((width / 2), (360))
-        display.blit(TextSurf, TextRect)
-
-
-        button("Start!", 150, 450, 200, 100, colors['DARK_GREEN'], colors['LIGHT_GREEN'], display,0,0, Main)
-        button("Quit", 450, 450, 200, 100, colors['DARK_RED'], colors['RED'], display,0,0, quit)
-
-        pygame.display.update()
-        clock.tick(15)
 
 if __name__ in "__main__":
     global colors, tiles
-    colors = {
-        "WHITE": (255, 255, 255),
-        "RED": (255, 0, 0),
-        "DARK_RED": (102, 0, 0),
-        "DARK_GREEN": (0, 102, 0),
-        "LIGHT_GREEN": (0, 170, 0),
-        "BLUE": (0, 0, 255),
-        "LIGHT_BLUE": (153, 255, 255),
-        "BLACK": (0, 0, 0),
-        "GREY": (64, 64, 64),
-        "WORLD": (25, 0, 51),
-        "YELLOW": (255, 255, 51),
-        "PINK": (153, 0, 153)
-
-    }
-
     tiles = {
         "GRASS":0,
         "WATER":1,

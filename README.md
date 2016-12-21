@@ -25,4 +25,4 @@ arch -32 python window.py
 ```
 **(it has to run in a 32 bit architecture)**
 
-####I did not write the code for the srolling screen, buttons, and start menu but other than that, I created the maps and pretty much every thing else. 
+####I did not write the code in gui.py but other than that, I created pretty much every thing else. 
