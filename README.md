@@ -16,6 +16,8 @@ While there are downloads for pygame on mac [here](http://www.pygame.org/downloa
 [here some dude explained it pretty well](http://brysonpayne.com/2015/01/10/setting-up-pygame-on-a-mac/)
 
 ^^^ WARNING: It works, but it screwed up the path on my terminal, so make shure that is saved^^^
+
+
 for the other packages:
 ```sh
 pip install -r reqirements.txt
