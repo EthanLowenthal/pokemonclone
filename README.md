@@ -30,3 +30,5 @@ arch -32 python2 window.py
 **(it has to run in a 32 bit architecture and is only tested in python2)**
 
 ####I did not write the code in gui.py but other than that, I created pretty much every thing else. 
+
+[I plan to use this code's structure for the battle part of my program](https://github.com/ThomasDubyak/pykemon)
