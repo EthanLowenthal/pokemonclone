@@ -7,8 +7,9 @@ try: import maps, pokemon
 except: print('YOU MAY HAVE DELETED IMPORTANT FILES: SHUTTING DOWN') & quit()
 from maps import *
 from pokemon import *
-from pygame.locals import*
+from pygame.locals import *
 from gui import *
+from type_advantages import *
 
 optimize = True
 ingame = False
