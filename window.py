@@ -202,6 +202,16 @@ def draw_map(cam_pos):
                         pygame.draw.rect(world, colors["LIGHT_BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
 
 
+def battle():
+    battle_surf = pygame.Surface((400, 500))
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit()
+        battle_surf.fill(colors['BLACK'])
+        display.blit(battle_surf)
+        pygame.display.flip()
+
 
 def get_pokemon():
     chance = random.randint(1, 1000)
@@ -216,6 +226,7 @@ def get_pokemon():
             return
         resp = requests.get(pokemon)
         textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
+        battle()
 
 
 def pause_menu():
