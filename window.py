@@ -51,6 +51,7 @@ class Player:
         self.image.fill(colors["WHITE"])
         self.rect = pygame.Rect((50,50),(16,16))
         self.speed = 5
+        self.pokemon = []
 
     def change_world(self):
         time.sleep(0.7)
@@ -214,6 +215,7 @@ def get_pokemon():
             last_cam_pos = camera_pos
             return
         resp = requests.get(pokemon)
+        print(json.loads(resp.text))
         textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
 
 
@@ -339,10 +341,21 @@ def settings():
             optimize = False
 
 
+def starterpokemon(player):
+    while True:
+        display.fill(colors['WHITE'])
+        myfont = pygame.font.SysFont(None, 75)
+        label = myfont.render('Choose your starter pokemon!', 1, (0, 0, 0))
+        labelrect = label.get_rect()
+        labelrect.center = ((width / 2), (260))
+        display.blit(label, (25, 75))
+        pygame.display.flip()
+
 
 def StartGame():
     global ingame
     ingame = True
+    starterpokemon(player)
     Main()
 
 
