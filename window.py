@@ -1,6 +1,6 @@
 import sys
 if sys.maxsize.bit_length() == 63: print('ONLY RUNS IN 32 BIT PYTHON: SHUTTING DOWN') & quit()
-import pygame, time, random, json, requests
+import pygame, time, random, json, requests, urllib, cStringIO
 try:pass
 except:print('A REQIERED PACKAGE IS NOT INSTALLED: SHUTTING DOWN') & quit()
 try: import maps, pokemon
@@ -215,7 +215,6 @@ def get_pokemon():
             last_cam_pos = camera_pos
             return
         resp = requests.get(pokemon)
-        print(json.loads(resp.text))
         textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
 
 
@@ -341,21 +340,52 @@ def settings():
             optimize = False
 
 
-def starterpokemon(player):
-    while True:
-        display.fill(colors['WHITE'])
-        myfont = pygame.font.SysFont(None, 75)
-        label = myfont.render('Choose your starter pokemon!', 1, (0, 0, 0))
-        labelrect = label.get_rect()
-        labelrect.center = ((width / 2), (260))
-        display.blit(label, (25, 75))
+def starterpokemon():
+    global x
+    x = True
+    display.fill(colors['WHITE'])
+    pygame.draw.rect(display, colors['YELLOW'], (0, 0, width, height))
+    pygame.draw.rect(display, colors['WHITE'], (10, 10, width - 20, height - 20))
+    myfont = pygame.font.SysFont(None, 90)
+    label = myfont.render('Choose your starter', 1, (0, 0, 0))
+    label1 = myfont.render('pokemon!', 1, (0, 0, 0))
+    def b():
+        player.pokemon.append(1)
+        global x
+        x = False
+    def c():
+        player.pokemon.append(4)
+        global x
+        x = False
+    def s():
+        player.pokemon.append(7)
+        global x
+        x = False
+
+    b_img = pygame.image.load(cStringIO.StringIO(urllib.urlopen(json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/1').text)['sprites']['front_default']).read()))
+    c_img = pygame.image.load(cStringIO.StringIO(urllib.urlopen(json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/4').text)['sprites']['front_default']).read()))
+    s_img = pygame.image.load(cStringIO.StringIO(urllib.urlopen(json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/7').text)['sprites']['front_default']).read()))
+    while x:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                quit()
+        display.blit(label, (100, 75))
+        display.blit(label1, (270, 150))
+        button("", 266, 290, 266, 300, colors['WHITE'], colors['WHITE'], display, 0, 0, s)
+        button("", 10, 290, 256, 300, colors['WHITE'], colors['WHITE'], display, 0, 0, b)
+        button("", 532, 290, 256, 300, colors['WHITE'], colors['WHITE'], display, 0, 0, c)
+        display.blit(pygame.transform.scale(s_img, (500, 500)), (150, 200))
+        display.blit(pygame.transform.scale(b_img, (500, 500)), (-100, 200))
+        display.blit(pygame.transform.scale(c_img, (500, 500)), (400, 200))
         pygame.display.flip()
 
 
 def StartGame():
     global ingame
     ingame = True
-    starterpokemon(player)
+    if player.pokemon == []:
+        starterpokemon()
     Main()
 
 
