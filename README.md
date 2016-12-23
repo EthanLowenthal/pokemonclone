@@ -17,6 +17,10 @@ While there are downloads for pygame on mac [here](http://www.pygame.org/downloa
 
 ^^^ WARNING: It works, but it screwed up the path on my terminal, so make shure that is saved^^^
 
+You could also
+```sh
+pip install pygame
+```
 
 for the other packages:
 ```sh
