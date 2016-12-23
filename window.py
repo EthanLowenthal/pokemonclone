@@ -215,7 +215,7 @@ def draw_attacker():
     urlopen = urllib.urlopen(img_url).read()
     img = cStringIO.StringIO(urlopen)
     load_img = pygame.image.load(img)
-    t_img = pygame.transform.scale(load_img, (250, 250))
+    t_img = pygame.transform.scale(load_img, (300, 300))
     return t_img
 
 def draw_defender(pokemon):
@@ -225,7 +225,7 @@ def draw_defender(pokemon):
     urlopen = urllib.urlopen(img_url).read()
     img = cStringIO.StringIO(urlopen)
     load_img = pygame.image.load(img)
-    t_img = pygame.transform.scale(load_img, (200, 200))
+    t_img = pygame.transform.scale(load_img, (250, 250))
     return t_img
 
 def displaybattletext(text):
@@ -234,6 +234,8 @@ def displaybattletext(text):
     return label
 
 def use_move(x):
+    global move_used
+    move_used = True
     move = x[0]
     player_data = x[1]
     com_data = x[2]
@@ -250,56 +252,147 @@ def use_move(x):
     if C is None:
         C = 40
     global dmg, label
-    label = displaybattletext('You used ' + move['move']['name'] + '!')
+    label = displaybattletext(player_data['name']+ ' used '+move['move']['name']+'!')
     dmg = ((((2*A+10)/250) * B/D * C + 2) * 1 * Y * Z)/255
 
 
+def draw_battle(battle_surf, d, a, moves, player_data, com_data):
+    battle_surf.fill(colors['WORLD'])
+    pygame.draw.rect(battle_surf, colors['YELLOW'], (10, 10, 380, 480))
+    pygame.draw.rect(battle_surf, colors['WHITE'], (20, 20, 360, 210))
+    pygame.draw.rect(battle_surf, colors['WHITE'], (20, 240, 360, 60))
+    pygame.draw.rect(battle_surf, colors['WHITE'], (20, 310, 360, 170))
+    battle_surf.blit(d, (180, -50))
+    battle_surf.blit(a, (-10, 10))
+    try:
+        fake_button(moves[0]['move']['name'], 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
+               150, size=35, action=use_move, args=[moves[0], player_data, com_data])
+    except:
+        fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+    try:
+        fake_button(moves[1]['move']['name'], 30, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
+               150, size=35, action=use_move, args=[moves[1], player_data, com_data])
+    except:
+        fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+    try:
+        fake_button(moves[2]['move']['name'], 200, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
+               150, size=35, action=use_move, args=[moves[2], player_data, com_data])
+    except:
+        fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+    try:
+        fake_button(moves[3]['move']['name'], 200, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
+               150, size=35, action=use_move, args=[moves[3], player_data, com_data])
+    except:
+        fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+
+def won(person):
+    pass
 
 def battle(pokemon):
+    global move_used, label, paused, dmg
+    move_used = False
     battle_surf = pygame.Surface((400, 500))
     a = draw_attacker()
     d = draw_defender(pokemon)
-    moves = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+ str(pokemon)).text)['moves']
+    moves = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+ str(player.pokemon[0])).text)['moves']
     player_data = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+str(player.pokemon[0])).text)
     com_data = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+ str(pokemon)).text)
     label = displaybattletext('You encountered a ' + com_data['name'])
-
+    player_hp = player_data['stats'][5]['base_stat']
+    com_hp = com_data['stats'][5]['base_stat']
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == K_ESCAPE:
-                    global paused
                     paused = True
                     pause(player)
-        battle_surf.fill(colors['WORLD'])
-        pygame.draw.rect(battle_surf, colors['YELLOW'], (10, 10, 380, 480))
-        pygame.draw.rect(battle_surf, colors['WHITE'], (20, 20, 360, 210))
-        pygame.draw.rect(battle_surf, colors['WHITE'], (20, 240, 360, 60))
-        pygame.draw.rect(battle_surf, colors['WHITE'], (20, 310, 360, 170))
-        battle_surf.blit(a, (10, 60))
-        battle_surf.blit(d, (160, 0))
+        draw_battle(battle_surf, d, a, moves, player_data, com_data)
         try:
-            button(moves[0]['move']['name'], 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200, 150, size=35, action=use_move, args=[moves[0], player_data,com_data])
+            button(moves[0]['move']['name'], 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
+                   200,
+                   150, size=35, action=use_move, args=[moves[0], player_data, com_data])
         except:
             button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
         try:
-            button(moves[1]['move']['name'], 30, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200, 150, size=35, action=use_move, args=[moves[1],player_data,com_data])
+            button(moves[1]['move']['name'], 30, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
+                   200,
+                   150, size=35, action=use_move, args=[moves[1], player_data, com_data])
         except:
             button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
         try:
-            button(moves[2]['move']['name'], 200, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200, 150, size=35, action=use_move, args=[moves[2],player_data,com_data])
+            button(moves[2]['move']['name'], 200, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
+                   200,
+                   150, size=35, action=use_move, args=[moves[2], player_data, com_data])
         except:
             button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
         try:
-            button(moves[3]['move']['name'], 200, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200, 150, size=35, action=use_move, args=[moves[3],player_data,com_data])
+            button(moves[3]['move']['name'], 200, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
+                   200,
+                   150, size=35, action=use_move, args=[moves[3], player_data, com_data])
         except:
             button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
-        global label
         battle_surf.blit(label, (40, 255))
         display.blit(battle_surf, (200, 150))
         pygame.display.flip()
+        if move_used:
+            time.sleep(2)
+            draw_battle(battle_surf, d, a, moves, player_data, com_data)
+            battle_surf.blit(label, (40, 255))
+            display.blit(battle_surf, (200, 150))
+            pygame.display.flip()
+            time.sleep(2)
+
+            com_hp -= dmg
+            if com_hp <= 0:
+                won(player)
+            draw_battle(battle_surf, d, a, moves, player_data, com_data)
+            label = displaybattletext('It dealt ' + str(int(dmg)) + ' damage!')
+            battle_surf.blit(label, (40, 255))
+            display.blit(battle_surf, (200, 150))
+            pygame.display.flip()
+            time.sleep(2)
+
+            if type_adv[player_data['types'][0]['type']['name']][com_data['types'][0]['type']['name']] == 2.5:
+                label = displaybattletext('Its not very effective...')
+            if type_adv[player_data['types'][0]['type']['name']][com_data['types'][0]['type']['name']] == 20:
+                label = displaybattletext('Its super effective')
+            draw_battle(battle_surf, d, a, moves, player_data, com_data)
+            battle_surf.blit(label, (40, 255))
+            display.blit(battle_surf, (200, 150))
+            pygame.display.flip()
+            time.sleep(2)
+
+            move = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+ str(pokemon)).text)
+            move = move['moves'][random.randint(0,len(move))]
+            use_move([move,com_data,com_data,player_data])
+            draw_battle(battle_surf, d, a, moves, player_data, com_data)
+            battle_surf.blit(label, (40, 255))
+            display.blit(battle_surf, (200, 150))
+            pygame.display.flip()
+            time.sleep(2)
+
+            player_hp -= dmg
+            if player_hp <= 0:
+                won(com_data)
+            draw_battle(battle_surf, d, a, moves, player_data, com_data)
+            label = displaybattletext('It dealt ' + str(int(dmg)) + ' damage!')
+            battle_surf.blit(label, (40, 255))
+            display.blit(battle_surf, (200, 150))
+            pygame.display.flip()
+            time.sleep(2)
+
+            if type_adv[com_data['types'][0]['type']['name']][player_data['types'][0]['type']['name']] == 2.5:
+                label = displaybattletext('Its not very effective...')
+            if type_adv[com_data['types'][0]['type']['name']][player_data['types'][0]['type']['name']] == 20:
+                label = displaybattletext('Its super effective')
+            draw_battle(battle_surf, d, a, moves, player_data, com_data)
+            battle_surf.blit(label, (40, 255))
+            display.blit(battle_surf, (200, 150))
+            pygame.display.flip()
+            time.sleep(2)
+            move_used = False
 
 
 def get_pokemon():
@@ -315,6 +408,8 @@ def get_pokemon():
             return
         resp = requests.get(pokemon)
         textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
+        displayText()
+        pygame.display.flip()
         battle(json.loads(resp.text)['id'])
 
 def resume_game():

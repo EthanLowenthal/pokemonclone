@@ -105,3 +105,11 @@ def button(msg,x,y,w,h,ic,ac,display,sufcoordsx,sufcoordsy, action=None, size=40
     textRect = textSurf.get_rect()
     textRect.center = ((x+(w/2)), (y+(h/2)))
     display.blit(textSurf, textRect)
+
+def fake_button(msg,x,y,w,h,ic,ac,display,sufcoordsx,sufcoordsy, action=None, size=40, args=None):
+    pygame.draw.rect(display, ic, (x, y, w, h))
+    smallText = pygame.font.SysFont(None, size)
+    textSurf = smallText.render(msg, True, colors['BLACK'])
+    textRect = textSurf.get_rect()
+    textRect.center = ((x + (w / 2)), (y + (h / 2)))
+    display.blit(textSurf, textRect)
