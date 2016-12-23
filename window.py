@@ -9,7 +9,10 @@ from maps import *
 from pokemon import *
 from pygame.locals import *
 from gui import *
+from poster.streaminghttp import register_openers
 from type_advantages import *
+
+register_openers()
 
 optimize = True
 ingame = False
@@ -202,22 +205,45 @@ def draw_map(cam_pos):
                     elif wall == tiles["ICE"]:
                         pygame.draw.rect(world, colors["LIGHT_BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
 
+def draw_attacker():
+    resp_url = 'http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[0])
+    resp = requests.get(resp_url)
+    img_url = json.loads(resp.text)['sprites']['back_default']
+    urlopen = urllib.urlopen(img_url).read()
+    img = cStringIO.StringIO(urlopen)
+    load_img = pygame.image.load(img)
+    t_img = pygame.transform.scale(load_img, (250, 250))
+    return t_img
 
-def battle():
+def draw_defender(pokemon):
+    resp_url = 'http://pokeapi.co/api/v2/pokemon/' + str(pokemon)
+    resp = requests.get(resp_url)
+    img_url = json.loads(resp.text)['sprites']['front_default']
+    urlopen = urllib.urlopen(img_url).read()
+    img = cStringIO.StringIO(urlopen)
+    load_img = pygame.image.load(img)
+    t_img = pygame.transform.scale(load_img, (200, 200))
+    return t_img
+
+def battle(pokemon):
     battle_surf = pygame.Surface((400, 500))
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
-        battle_surf.fill(colors['BLACK'])
-        display.blit(battle_surf)
+        battle_surf.fill(colors['WHITE'])
+        pygame.draw.rect(battle_surf, colors['YELLOW'], (10, 10, 380, 480))
+        pygame.draw.rect(battle_surf, colors['WHITE'], (20, 20, 360, 210))
+        battle_surf.blit(draw_attacker(), (10, 60))
+        battle_surf.blit(draw_defender(pokemon), (160, 0))
+        display.blit(battle_surf, (200, 150))
         pygame.display.flip()
 
 
 def get_pokemon():
     chance = random.randint(1, 1000)
     global pokemon, textlog, last_cam_pos
-    if chance >= 998 and camera_pos != last_cam_pos:
+    if chance >= 1 and camera_pos != last_cam_pos:
         if current_tile == tiles["GRASS"] or current_tile == tiles["LIGHT_GRASS"]:
             pokemon = random.choice(grass_pokemon)
         if current_tile == tiles["WATER"]:
@@ -227,7 +253,7 @@ def get_pokemon():
             return
         resp = requests.get(pokemon)
         textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
-        battle()
+        battle(json.loads(resp.text)['id'])
 
 
 def pause_menu():
