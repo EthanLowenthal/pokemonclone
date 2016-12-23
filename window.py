@@ -300,6 +300,7 @@ def won(person):
 
 def battle(pokemon):
     global move_used, label, paused, dmg, player_hp, com_hp
+    overlay.fill(colors['BLACK'])
     move_used = False
     battle_surf = pygame.Surface((400, 500))
     a = draw_attacker()
@@ -311,6 +312,7 @@ def battle(pokemon):
     player_hp = player_data['stats'][5]['base_stat']
     com_hp = com_data['stats'][5]['base_stat']
     while True:
+        overlay.set_alpha(100)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
@@ -344,12 +346,16 @@ def battle(pokemon):
         except:
             button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
         battle_surf.blit(label, (40, 255))
+        overlay.set_alpha(100)
+        display.blit(overlay, (0, 0))
         display.blit(battle_surf, (200, 150))
         pygame.display.flip()
         if move_used:
             time.sleep(2)
             draw_battle(battle_surf, d, a, moves, player_data, com_data)
             battle_surf.blit(label, (40, 255))
+            overlay.set_alpha(100)
+            display.blit(overlay, (0, 0))
             display.blit(battle_surf, (200, 150))
             pygame.display.flip()
             time.sleep(2)
@@ -360,6 +366,8 @@ def battle(pokemon):
             draw_battle(battle_surf, d, a, moves, player_data, com_data)
             label = displaybattletext('It dealt ' + str(int(dmg)) + ' damage!')
             battle_surf.blit(label, (40, 255))
+            overlay.set_alpha(100)
+            display.blit(overlay, (0, 0))
             display.blit(battle_surf, (200, 150))
             pygame.display.flip()
             time.sleep(2)
@@ -370,6 +378,8 @@ def battle(pokemon):
                 label = displaybattletext('Its super effective')
             draw_battle(battle_surf, d, a, moves, player_data, com_data)
             battle_surf.blit(label, (40, 255))
+            overlay.set_alpha(100)
+            display.blit(overlay, (0, 0))
             display.blit(battle_surf, (200, 150))
             pygame.display.flip()
             time.sleep(2)
@@ -379,6 +389,8 @@ def battle(pokemon):
             use_move([move,com_data,com_data,player_data])
             draw_battle(battle_surf, d, a, moves, player_data, com_data)
             battle_surf.blit(label, (40, 255))
+            overlay.set_alpha(100)
+            display.blit(overlay, (0, 0))
             display.blit(battle_surf, (200, 150))
             pygame.display.flip()
             time.sleep(2)
@@ -389,6 +401,8 @@ def battle(pokemon):
             draw_battle(battle_surf, d, a, moves, player_data, com_data)
             label = displaybattletext('It dealt ' + str(int(dmg)) + ' damage!')
             battle_surf.blit(label, (40, 255))
+            overlay.set_alpha(100)
+            display.blit(overlay, (0, 0))
             display.blit(battle_surf, (200, 150))
             pygame.display.flip()
             time.sleep(2)
@@ -399,6 +413,8 @@ def battle(pokemon):
                 label = displaybattletext('Its super effective')
             draw_battle(battle_surf, d, a, moves, player_data, com_data)
             battle_surf.blit(label, (40, 255))
+            overlay.set_alpha(100)
+            display.blit(overlay, (0, 0))
             display.blit(battle_surf, (200, 150))
             pygame.display.flip()
             time.sleep(2)
@@ -424,8 +440,8 @@ def get_pokemon():
 
 def resume_game():
     global paused
-    pause_surf.set_alpha(0)
     paused = False
+    pause(player, paused=False)
 
 def pause_menu():
     pause_surf.set_alpha(255)
@@ -454,26 +470,27 @@ def settings_menu(check):
     display.blit(pause_surf, ((width / 2) - 175, 100))
 
 
-def pause(player):
-    paused = True
+def pause(player, paused=True):
+    print(paused)
     overlay.fill(colors['BLACK'])
     pygame.display.set_caption('Ethan\'s Pokemon Clone [PAUSED]')
-    while paused:
-        clock.tick(60)
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == K_ESCAPE:
-                    resume_game()
-        player.render(world)
-        display.blit(world, camera_pos)
-        overlay.fill(colors['BLACK'])
-        draw_legend()
-        overlay.set_alpha(200)
-        display.blit(overlay, (0,0))
-        pause_menu()
-        pygame.display.flip()
+    if paused:
+        while paused:
+            clock.tick(60)
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    quit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == K_ESCAPE:
+                        resume_game()
+            player.render(world)
+            display.blit(world, camera_pos)
+            overlay.fill(colors['BLACK'])
+            draw_legend()
+            overlay.set_alpha(200)
+            display.blit(overlay, (0,0))
+            pause_menu()
+            pygame.display.flip()
 
 def Main():
     global display, clock, world, intro, camera_pos, last_cam_pos
