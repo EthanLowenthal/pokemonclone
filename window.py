@@ -299,7 +299,7 @@ def won(person):
     pass
 
 def battle(pokemon):
-    global move_used, label, paused, dmg, player_hp, com_hp
+    global move_used, label, dmg, player_hp, com_hp
     overlay.fill(colors['BLACK'])
     move_used = False
     battle_surf = pygame.Surface((400, 500))
@@ -318,7 +318,6 @@ def battle(pokemon):
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == K_ESCAPE:
-                    paused = True
                     pause(player)
         draw_battle(battle_surf, d, a, moves, player_data, com_data)
         try:
@@ -439,8 +438,8 @@ def get_pokemon():
         battle(json.loads(resp.text)['id'])
 
 def resume_game():
-    global paused
-    paused = False
+    global p
+    p = False
     pause(player, paused=False)
 
 def pause_menu():
@@ -471,17 +470,19 @@ def settings_menu(check):
 
 
 def pause(player, paused=True):
-    print(paused)
+    global p
+    p = paused
     overlay.fill(colors['BLACK'])
     pygame.display.set_caption('Ethan\'s Pokemon Clone [PAUSED]')
-    if paused:
-        while paused:
+    while True:
+        if p:
             clock.tick(60)
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     quit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == K_ESCAPE:
+                        p = False
                         resume_game()
             player.render(world)
             display.blit(world, camera_pos)
@@ -491,6 +492,8 @@ def pause(player, paused=True):
             display.blit(overlay, (0,0))
             pause_menu()
             pygame.display.flip()
+        else:
+            return
 
 def Main():
     global display, clock, world, intro, camera_pos, last_cam_pos
@@ -505,8 +508,6 @@ def Main():
                 return
             if event.type == pygame.KEYDOWN:
                 if event.key == K_ESCAPE:
-                    global paused
-                    paused = True
                     pause(player)
 
         camera_pos, player_pos = player.move(camera_pos)
