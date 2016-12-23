@@ -257,6 +257,7 @@ def use_move(x):
 
 
 def draw_battle(battle_surf, d, a, moves, player_data, com_data):
+    global player_hp, com_hp
     battle_surf.fill(colors['WORLD'])
     pygame.draw.rect(battle_surf, colors['YELLOW'], (10, 10, 380, 480))
     pygame.draw.rect(battle_surf, colors['WHITE'], (20, 20, 360, 210))
@@ -264,6 +265,11 @@ def draw_battle(battle_surf, d, a, moves, player_data, com_data):
     pygame.draw.rect(battle_surf, colors['WHITE'], (20, 310, 360, 170))
     battle_surf.blit(d, (180, -50))
     battle_surf.blit(a, (-10, 10))
+    myfont = pygame.font.SysFont(None, 30)
+    label = myfont.render('COM', 1, (0, 0, 0))
+    battle_surf.blit(label, (40, 30))
+    pygame.draw.rect(battle_surf, colors['RED'], (50, 50, 100, 5))
+    pygame.draw.rect(battle_surf, colors['LIGHT_GREEN'], (50, 50, (com_hp / com_data['stats'][5]['base_stat']) * 100, 5))
     try:
         fake_button(moves[0]['move']['name'], 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
                150, size=35, action=use_move, args=[moves[0], player_data, com_data])
@@ -289,7 +295,7 @@ def won(person):
     pass
 
 def battle(pokemon):
-    global move_used, label, paused, dmg
+    global move_used, label, paused, dmg, player_hp, com_hp
     move_used = False
     battle_surf = pygame.Surface((400, 500))
     a = draw_attacker()
