@@ -268,6 +268,11 @@ def battle(pokemon):
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == K_ESCAPE:
+                    global paused
+                    paused = True
+                    pause(player)
         battle_surf.fill(colors['WORLD'])
         pygame.draw.rect(battle_surf, colors['YELLOW'], (10, 10, 380, 480))
         pygame.draw.rect(battle_surf, colors['WHITE'], (20, 20, 360, 210))
@@ -312,14 +317,19 @@ def get_pokemon():
         textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
         battle(json.loads(resp.text)['id'])
 
+def resume_game():
+    global paused
+    pause_surf.set_alpha(0)
+    paused = False
 
 def pause_menu():
+    pause_surf.set_alpha(255)
     pygame.draw.rect(pause_surf, colors['YELLOW'],(0, 0, 350, 500))
     pygame.draw.rect(pause_surf, colors['WHITE'], (10, 10, 330, 480))
     myfont = pygame.font.SysFont(None, 60)
     label = myfont.render('Paused', 1, (0, 0, 0))
     pause_surf.blit(label, (100, 30))
-    button('Resume', 100, 100, 150, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width/2)-175, 100, Main)
+    button('Resume', 100, 100, 150, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width/2)-175, 100, resume_game)
     button("Quit", 100, 160, 150, 50, colors['DARK_RED'], colors['RED'], pause_surf, (width/2)-175, 100, quit)
     button("Home", 100, 220, 150, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width / 2) - 175, 100, game_intro)
     button("Settings", 100, 280, 150, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width / 2) - 175, 100, settings)
@@ -333,24 +343,24 @@ def settings_menu(check):
     pause_surf.blit(label, (85, 30))
     check.render_checkbox()
     if ingame:
-        button("Save", 240, 440, 100, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width / 2) - 175, 100, Main)
+        button("Save", 240, 440, 100, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width / 2) - 175, 100, pause, args=player)
     else:
         button("Save", 240, 440, 100, 50, colors['DARK_GREEN'], colors['LIGHT_GREEN'], pause_surf, (width / 2) - 175, 100, game_intro)
     display.blit(pause_surf, ((width / 2) - 175, 100))
 
 
 def pause(player):
+    paused = True
     overlay.fill(colors['BLACK'])
     pygame.display.set_caption('Ethan\'s Pokemon Clone [PAUSED]')
-    while True:
+    while paused:
         clock.tick(60)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == K_ESCAPE:
-                    Main()
-
+                    resume_game()
         player.render(world)
         display.blit(world, camera_pos)
         overlay.fill(colors['BLACK'])
@@ -373,6 +383,8 @@ def Main():
                 return
             if event.type == pygame.KEYDOWN:
                 if event.key == K_ESCAPE:
+                    global paused
+                    paused = True
                     pause(player)
 
         camera_pos, player_pos = player.move(camera_pos)
