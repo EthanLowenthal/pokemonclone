@@ -35,7 +35,8 @@ colors = {
     "GREY": (64, 64, 64),
     "WORLD": (25, 0, 51),
     "YELLOW": (255, 255, 51),
-    "PINK": (153, 0, 153)
+    "PINK": (153, 0, 153),
+    "DARK_GREY": (96, 96, 96)
 
 }
 
@@ -225,17 +226,46 @@ def draw_defender(pokemon):
     t_img = pygame.transform.scale(load_img, (200, 200))
     return t_img
 
+def displaybattletext(text):
+    myfont = pygame.font.SysFont(None, 30)
+    label = myfont.render(text, 1, (0, 0, 0))
+    return label
+
 def battle(pokemon):
     battle_surf = pygame.Surface((400, 500))
+    a = draw_attacker()
+    d = draw_defender(pokemon)
+    label = displaybattletext('You encountered a '+ json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+ str(pokemon)).text)['name'])
+    moves = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+ str(pokemon)).text)['moves']
+
     while True:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 quit()
-        battle_surf.fill(colors['WHITE'])
+        battle_surf.fill(colors['WORLD'])
         pygame.draw.rect(battle_surf, colors['YELLOW'], (10, 10, 380, 480))
         pygame.draw.rect(battle_surf, colors['WHITE'], (20, 20, 360, 210))
-        battle_surf.blit(draw_attacker(), (10, 60))
-        battle_surf.blit(draw_defender(pokemon), (160, 0))
+        pygame.draw.rect(battle_surf, colors['WHITE'], (20, 240, 360, 60))
+        pygame.draw.rect(battle_surf, colors['WHITE'], (20, 310, 360, 170))
+        battle_surf.blit(a, (10, 60))
+        battle_surf.blit(d, (160, 0))
+        try:
+            button(moves[0]['move']['name'], 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+        except:
+            button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+        try:
+            button(moves[1]['move']['name'], 30, 395, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+        except:
+            button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+        try:
+            button(moves[2]['move']['name'], 200, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+        except:
+            button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+        try:
+            button(moves[3]['move']['name'], 200, 395, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+        except:
+            button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+        battle_surf.blit(label, (40, 255))
         display.blit(battle_surf, (200, 150))
         pygame.display.flip()
 
