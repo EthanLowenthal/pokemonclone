@@ -268,8 +268,12 @@ def draw_battle(battle_surf, d, a, moves, player_data, com_data):
     myfont = pygame.font.SysFont(None, 30)
     label = myfont.render('COM', 1, (0, 0, 0))
     battle_surf.blit(label, (40, 30))
-    pygame.draw.rect(battle_surf, colors['RED'], (50, 50, 100, 5))
-    pygame.draw.rect(battle_surf, colors['LIGHT_GREEN'], (50, 50, (com_hp / com_data['stats'][5]['base_stat']) * 100, 5))
+    pygame.draw.rect(battle_surf, colors['RED'], (50, 50, 150, 8))
+    pygame.draw.rect(battle_surf, colors['LIGHT_GREEN'], (50, 50, (com_hp / com_data['stats'][5]['base_stat']) * 150, 8))
+    label = myfont.render('PLAYER', 1, (0, 0, 0))
+    battle_surf.blit(label, (220, 190))
+    pygame.draw.rect(battle_surf, colors['RED'], (220, 210, 150, 8))
+    pygame.draw.rect(battle_surf, colors['LIGHT_GREEN'], (220, 210, (player_hp / player_data['stats'][5]['base_stat']) * 150, 8))
     try:
         fake_button(moves[0]['move']['name'], 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
                150, size=35, action=use_move, args=[moves[0], player_data, com_data])
