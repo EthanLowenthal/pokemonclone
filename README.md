@@ -19,7 +19,7 @@ While there are downloads for pygame on mac [here](http://www.pygame.org/downloa
 
 You could also
 ```sh
-pip install -r pygame
+pip install pygame
 ```
 
 for the other packages:
