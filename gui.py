@@ -86,11 +86,11 @@ class Checkbox:
         else:
             return False
 
-def button(msg,x,y,w,h,ic,ac,display,sufcoordsx,sufcoordsy, action=None, size=40, args=None):
+def button(title,x,y,width,height,inactive_color,active_color,display,sufcoordsx=0,sufcoordsy=0, action=None, size=40, args=None):
     mouse = pygame.mouse.get_pos()
     click = pygame.mouse.get_pressed()
-    if x+w+sufcoordsx > mouse[0] > x+sufcoordsx and y+h+sufcoordsy > mouse[1] > y+sufcoordsy:
-        pygame.draw.rect(display, ac,(x,y,w,h))
+    if x+width+sufcoordsx > mouse[0] > x+sufcoordsx and y+height+sufcoordsy > mouse[1] > y+sufcoordsy:
+        pygame.draw.rect(display, active_color,(x,y,width,height))
         if click[0] == 1 and action != None:
             global intro
             intro = False
@@ -99,12 +99,13 @@ def button(msg,x,y,w,h,ic,ac,display,sufcoordsx,sufcoordsy, action=None, size=40
             else:
                 action()
     else:
-        pygame.draw.rect(display, ic,(x,y,w,h))
+        pygame.draw.rect(display, inactive_color,(x,y,width,height))
     smallText = pygame.font.SysFont(None, size)
-    textSurf = smallText.render(msg, True, colors['BLACK'])
+    textSurf = smallText.render(title, True, colors['BLACK'])
     textRect = textSurf.get_rect()
-    textRect.center = ((x+(w/2)), (y+(h/2)))
+    textRect.center = ((x+(width/2)), (y+(height/2)))
     display.blit(textSurf, textRect)
+
 
 def fake_button(msg,x,y,w,h,ic,ac,display,sufcoordsx,sufcoordsy, action=None, size=40, args=None):
     pygame.draw.rect(display, ic, (x, y, w, h))
