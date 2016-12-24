@@ -28,6 +28,7 @@ colors = {
     "RED": (255, 0, 0),
     "DARK_RED": (102, 0, 0),
     "DARK_GREEN": (0, 102, 0),
+    "GREEN": (0, 120, 0),
     "LIGHT_GREEN": (0, 255, 0),
     "BLUE": (0, 0, 255),
     "LIGHT_BLUE": (153, 255, 255),
@@ -258,7 +259,7 @@ def use_move(x):
     dmg = ((((2*A+10)/250) * B/D * C + 2) * 1 * Y * Z)/255
 
 
-def draw_battle(battle_surf, d, a, moves, player_data, com_data):
+def draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__):
     global player_hp, com_hp
     battle_surf.fill(colors['WORLD'])
     pygame.draw.rect(battle_surf, colors['YELLOW'], (10, 10, 380, 480))
@@ -276,29 +277,65 @@ def draw_battle(battle_surf, d, a, moves, player_data, com_data):
     battle_surf.blit(label, (220, 190))
     pygame.draw.rect(battle_surf, colors['RED'], (220, 210, 150, 8))
     pygame.draw.rect(battle_surf, colors['LIGHT_GREEN'], (220, 210, (player_hp / player_data['stats'][5]['base_stat']) * 150, 8))
-    try:
-        fake_button(moves[0]['move']['name'], 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
-               150, size=35, action=use_move, args=[moves[0], player_data, com_data])
-    except:
-        fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
-    try:
-        fake_button(moves[1]['move']['name'], 30, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
-               150, size=35, action=use_move, args=[moves[1], player_data, com_data])
-    except:
-        fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
-    try:
-        fake_button(moves[2]['move']['name'], 200, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
-               150, size=35, action=use_move, args=[moves[2], player_data, com_data])
-    except:
-        fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
-    try:
-        fake_button(moves[3]['move']['name'], 200, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
-               150, size=35, action=use_move, args=[moves[3], player_data, com_data])
-    except:
-        fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+    if __mode__ == 'attack':
+        try:
+            fake_button(moves[0]['move']['name'], 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
+                   150, size=35, action=use_move, args=[moves[0], player_data, com_data])
+        except:
+            fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+        try:
+            fake_button(moves[1]['move']['name'], 30, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
+                   150, size=35, action=use_move, args=[moves[1], player_data, com_data])
+        except:
+            fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+        try:
+            fake_button(moves[2]['move']['name'], 200, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
+                   150, size=35, action=use_move, args=[moves[2], player_data, com_data])
+        except:
+            fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+        try:
+            fake_button(moves[3]['move']['name'], 200, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200,
+                   150, size=35, action=use_move, args=[moves[3], player_data, com_data])
+        except:
+            fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
 
 def won(person):
     pass
+
+def display_pokemon(battle_surf):
+    pokemon_img = []
+    player.pokemon.append(23)
+    player.pokemon.append(432)
+    player.pokemon.append(12)
+    for i, pokemon in enumerate(player.pokemon):
+        if i <= 5:
+            img_url = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+ str(pokemon)).text)
+            urlopen = urllib.urlopen(img_url['sprites']['front_default']).read()
+            img = cStringIO.StringIO(urlopen)
+            load_img = pygame.image.load(img)
+            t_img = pygame.transform.scale(load_img, (95, 95))
+            pokemon_img.append((t_img, img_url))
+    while True:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                quit()
+        battle_surf.fill(colors['WORLD'])
+        pygame.draw.rect(battle_surf, colors['YELLOW'], (10, 10, 380, 480))
+        pygame.draw.rect(battle_surf, colors['WHITE'], (20, 20, 360, 460))
+        for pos in range(6):
+            try:
+                img = pokemon_img[pos]
+                button(img[1]['name'], 30, 75 * pos + 30, 340, 70, colors['GREEN'], colors['LIGHT_GREEN'], battle_surf,
+                       200, 150, size=35)
+                battle_surf.blit(img[0], (20, 75 * pos + 30 - 20))
+            except:
+                button('No Pokemon', 30, 75 * pos + 30, 340, 70, colors['GREY'], colors['DARK_GREY'], battle_surf,
+                      200, 150, size=35)
+        overlay.set_alpha(100)
+        display.blit(overlay, (0, 0))
+        display.blit(battle_surf, (200, 150))
+        pygame.display.flip()
+
 
 def change_mode(x):
     battle(x[0]['id'], __mode__=x[1])
@@ -325,7 +362,7 @@ def battle(pokemon, __mode__='menu'):
             if event.type == pygame.KEYDOWN:
                 if event.key == K_ESCAPE:
                     pause(player)
-        draw_battle(battle_surf, d, a, moves, player_data, com_data)
+        draw_battle(battle_surf, d, a, moves, player_data, com_data,__mode__)
         if __mode__ == 'attack':
             try:
                 button(moves[0]['move']['name'], 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
@@ -371,6 +408,8 @@ def battle(pokemon, __mode__='menu'):
             label = displaybattletext('You couldn\'t run away...')
             time.sleep(1)
             __mode__ = 'menu'
+        elif __mode__ == 'pokemon':
+            display_pokemon(battle_surf)
         elif __mode__ == 'menu':
                 button('Attack', 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'attack'))
                 button('Run', 30, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'run'))
@@ -383,7 +422,7 @@ def battle(pokemon, __mode__='menu'):
         pygame.display.flip()
         if move_used:
             time.sleep(2)
-            draw_battle(battle_surf, d, a, moves, player_data, com_data)
+            draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__)
             battle_surf.blit(label, (40, 255))
             overlay.set_alpha(100)
             display.blit(overlay, (0, 0))
@@ -394,7 +433,7 @@ def battle(pokemon, __mode__='menu'):
             com_hp -= dmg
             if com_hp <= 0:
                 won(player)
-            draw_battle(battle_surf, d, a, moves, player_data, com_data)
+            draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__)
             label = displaybattletext('It dealt ' + str(int(dmg)) + ' damage!')
             battle_surf.blit(label, (40, 255))
             overlay.set_alpha(100)
@@ -407,7 +446,7 @@ def battle(pokemon, __mode__='menu'):
                 label = displaybattletext('Its not very effective...')
             if type_adv[player_data['types'][0]['type']['name']][com_data['types'][0]['type']['name']] == 20:
                 label = displaybattletext('Its super effective')
-            draw_battle(battle_surf, d, a, moves, player_data, com_data)
+            draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__)
             battle_surf.blit(label, (40, 255))
             overlay.set_alpha(100)
             display.blit(overlay, (0, 0))
@@ -418,7 +457,7 @@ def battle(pokemon, __mode__='menu'):
             move = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+ str(pokemon)).text)
             move = move['moves'][random.randint(0,len(move))]
             use_move([move,com_data,com_data,player_data])
-            draw_battle(battle_surf, d, a, moves, player_data, com_data)
+            draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__)
             battle_surf.blit(label, (40, 255))
             overlay.set_alpha(100)
             display.blit(overlay, (0, 0))
@@ -429,7 +468,7 @@ def battle(pokemon, __mode__='menu'):
             player_hp -= dmg
             if player_hp <= 0:
                 won(com_data)
-            draw_battle(battle_surf, d, a, moves, player_data, com_data)
+            draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__)
             label = displaybattletext('It dealt ' + str(int(dmg)) + ' damage!')
             battle_surf.blit(label, (40, 255))
             overlay.set_alpha(100)
@@ -442,7 +481,7 @@ def battle(pokemon, __mode__='menu'):
                 label = displaybattletext('Its not very effective...')
             if type_adv[com_data['types'][0]['type']['name']][player_data['types'][0]['type']['name']] == 20:
                 label = displaybattletext('Its super effective')
-            draw_battle(battle_surf, d, a, moves, player_data, com_data)
+            draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__)
             battle_surf.blit(label, (40, 255))
             overlay.set_alpha(100)
             display.blit(overlay, (0, 0))
@@ -672,7 +711,6 @@ def draw_intro():
         button("", width - 65, height - 65, 50, 50, colors['WHITE'], colors['WHITE'], display, 0, 0, settings)
 
         display.blit(pygame.image.load('./images/settings.png'), (width - 65, height - 65))
-
 
 def game_intro():
     pygame.display.set_caption('Ethan\'s Pokemon Clone')
