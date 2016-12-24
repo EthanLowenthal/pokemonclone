@@ -208,6 +208,7 @@ def draw_map(cam_pos):
                     elif wall == tiles["ICE"]:
                         pygame.draw.rect(world, colors["LIGHT_BLUE"], ((pos1 * 50, pos2 * 50), (50, 50)))
 
+
 def draw_attacker():
     resp_url = 'http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[0])
     resp = requests.get(resp_url)
@@ -215,7 +216,7 @@ def draw_attacker():
     urlopen = urllib.urlopen(img_url).read()
     img = cStringIO.StringIO(urlopen)
     load_img = pygame.image.load(img)
-    t_img = pygame.transform.scale(load_img, (300, 300))
+    t_img = pygame.transform.scale(load_img, (250, 250))
     return t_img
 
 def draw_defender(pokemon):
@@ -234,7 +235,8 @@ def displaybattletext(text):
     return label
 
 def use_move(x):
-    global move_used
+    global move_used, escape_times
+    escape_times = 0
     move_used = True
     move = x[0]
     player_data = x[1]
@@ -298,8 +300,12 @@ def draw_battle(battle_surf, d, a, moves, player_data, com_data):
 def won(person):
     pass
 
-def battle(pokemon):
-    global move_used, label, dmg, player_hp, com_hp
+def change_mode(x):
+    battle(x[0]['id'], __mode__=x[1])
+
+def battle(pokemon, __mode__='menu'):
+    global move_used, label, dmg, player_hp, com_hp, escape_times
+    escape_times = 0
     overlay.fill(colors['BLACK'])
     move_used = False
     battle_surf = pygame.Surface((400, 500))
@@ -320,30 +326,56 @@ def battle(pokemon):
                 if event.key == K_ESCAPE:
                     pause(player)
         draw_battle(battle_surf, d, a, moves, player_data, com_data)
-        try:
-            button(moves[0]['move']['name'], 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
-                   200,
-                   150, size=35, action=use_move, args=[moves[0], player_data, com_data])
-        except:
-            button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
-        try:
-            button(moves[1]['move']['name'], 30, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
-                   200,
-                   150, size=35, action=use_move, args=[moves[1], player_data, com_data])
-        except:
-            button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
-        try:
-            button(moves[2]['move']['name'], 200, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
-                   200,
-                   150, size=35, action=use_move, args=[moves[2], player_data, com_data])
-        except:
-            button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
-        try:
-            button(moves[3]['move']['name'], 200, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
-                   200,
-                   150, size=35, action=use_move, args=[moves[3], player_data, com_data])
-        except:
-            button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+        if __mode__ == 'attack':
+            try:
+                button(moves[0]['move']['name'], 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
+                       200,
+                       150, size=35, action=use_move, args=[moves[0], player_data, com_data])
+            except:
+                button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+            try:
+                button(moves[1]['move']['name'], 30, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
+                       200,
+                       150, size=35, action=use_move, args=[moves[1], player_data, com_data])
+            except:
+                button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+            try:
+                button(moves[2]['move']['name'], 200, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
+                       200,
+                       150, size=35, action=use_move, args=[moves[2], player_data, com_data])
+            except:
+                button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+            try:
+                button(moves[3]['move']['name'], 200, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
+                       200,
+                       150, size=35, action=use_move, args=[moves[3], player_data, com_data])
+            except:
+                button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
+
+        elif __mode__ =='run':
+            escape_times += 1
+            player_speed = player_data['stats'][0]['base_stat']
+            com_speed = (com_data['stats'][0]['base_stat']/4)%256
+            chance = ((player_speed * 32)/com_speed) + 30 * escape_times
+            roll = random.randint(0,255)
+            print(chance, roll)
+            if roll > chance or chance > 255:
+                label = displaybattletext('You ran away!')
+                battle_surf.blit(label, (40, 255))
+                overlay.set_alpha(100)
+                display.blit(overlay, (0, 0))
+                display.blit(battle_surf, (200, 150))
+                pygame.display.flip()
+                time.sleep(2)
+                Main()
+            label = displaybattletext('You couldn\'t run away...')
+            time.sleep(1)
+            __mode__ = 'menu'
+        elif __mode__ == 'menu':
+                button('Attack', 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'attack'))
+                button('Run', 30, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'run'))
+                button('Items', 200, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'items'))
+                button('Pokemon', 200, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'pokemon'))
         battle_surf.blit(label, (40, 255))
         overlay.set_alpha(100)
         display.blit(overlay, (0, 0))
@@ -418,6 +450,7 @@ def battle(pokemon):
             pygame.display.flip()
             time.sleep(2)
             move_used = False
+            __mode__ = 'menu'
 
 
 def get_pokemon():
