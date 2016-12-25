@@ -217,7 +217,7 @@ def draw_map(cam_pos):
 
 def draw_attacker():
     global current_pokemon
-    resp_url = 'http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[current_pokemon])
+    resp_url = 'http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[current_pokemon][0])
     resp = requests.get(resp_url)
     img_url = json.loads(resp.text)['sprites']['back_default']
     urlopen = urllib.urlopen(img_url).read()
@@ -227,10 +227,11 @@ def draw_attacker():
     return t_img
 
 def draw_defender(pokemon):
-    resp_url = 'http://pokeapi.co/api/v2/pokemon/' + str(pokemon)
+    resp_url = 'http://pokeapi.co/api/v2/pokemon/' + str(pokemon[0])
     resp = requests.get(resp_url)
-    img_url = json.loads(resp.text)['sprites']['front_default']
-    urlopen = urllib.urlopen(img_url).read()
+    img_url = json.loads(resp.text).get('sprites')
+    print(img_url, pokemon)
+    urlopen = urllib.urlopen(img_url['front_default']).read()
     img = cStringIO.StringIO(urlopen)
     load_img = pygame.image.load(img)
     t_img = pygame.transform.scale(load_img, (250, 250))
@@ -306,7 +307,31 @@ def draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__):
             fake_button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
 
 def won(person):
-    pass
+    if person == 'player':
+        draw_battle(battle_surf, d, a, moves, player_data, com_data, 'attack')
+        label = displaybattletext(com_data['name'] + ' fainted!')
+        battle_surf.blit(label, (40, 255))
+        overlay.set_alpha(100)
+        display.blit(overlay, (0, 0))
+        display.blit(battle_surf, (200, 150))
+        pygame.display.flip()
+        time.sleep(2)
+        Main()
+    if person == 'com':
+        player.pokemon[current_pokemon] = [player.pokemon[current_pokemon][0], True]
+        for poke in player.pokemon:
+            if poke[1]:
+                display_pokemon(battle_surf)
+        else:
+            draw_battle(battle_surf, d, a, moves, player_data, com_data, 'attack')
+            label = displaybattletext(player_data['name'] + ' fainted!')
+            battle_surf.blit(label, (40, 255))
+            overlay.set_alpha(100)
+            display.blit(overlay, (0, 0))
+            display.blit(battle_surf, (200, 150))
+            pygame.display.flip()
+            time.sleep(2)
+            Main()
 
 def change_pokemon(num):
     global current_pokemon
@@ -321,12 +346,18 @@ def display_pokemon(battle_surf):
     for pos in range(6):
         try:
             img = pokemon_img[pos]
-            button(img[1]['name'], 30, 75 * pos + 30, 340, 70, colors['GREEN'], colors['LIGHT_GREEN'], battle_surf,200, 150, action=change_pokemon, size=35, args=pos)
+            try:
+                if player.pokemon[pos][1] is True:
+                    button(img[1]['name'], 30, 75 * pos + 30, 340, 70, colors['DARK_RED'], colors['RED'], battle_surf,200, 150, size=35)
+                else:
+                    button(img[1]['name'], 30, 75 * pos + 30, 340, 70, colors['GREEN'], colors['LIGHT_GREEN'], battle_surf,200, 150, action=change_pokemon, size=35, args=pos)
+            except: pass
             battle_surf.blit(img[0], (20, 75 * pos + 30 - 20))
         except:
             button('No Pokemon', 30, 75 * pos + 30, 340, 70, colors['GREY'], colors['DARK_GREY'], battle_surf,200, 150, size=35)
 
 def change_mode(x):
+    time.sleep(1)
     battle(x[0]['id'], __mode__=x[1])
 
 def battle(pokemon, __mode__='menu'):
@@ -409,7 +440,7 @@ def battle(pokemon, __mode__='menu'):
 
             com_hp -= dmg
             if com_hp <= 0:
-                won(player)
+                won('player')
             draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__)
             label = displaybattletext('It dealt ' + str(int(dmg)) + ' damage!')
             battle_surf.blit(label, (40, 255))
@@ -444,7 +475,7 @@ def battle(pokemon, __mode__='menu'):
 
             player_hp -= dmg
             if player_hp <= 0:
-                won(com_data)
+                won('com')
             draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__)
             label = displaybattletext('It dealt ' + str(int(dmg)) + ' damage!')
             battle_surf.blit(label, (40, 255))
@@ -474,7 +505,7 @@ def init_battle(pokemon, mode='menu'):
     pokemon_img = []
     for i, pokemon in enumerate(player.pokemon):
         if i <= 5:
-            img_url = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(pokemon)).text)
+            img_url = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(pokemon[0])).text)
             urlopen = urllib.urlopen(img_url['sprites']['front_default']).read()
             img = cStringIO.StringIO(urlopen)
             load_img = pygame.image.load(img)
@@ -486,11 +517,11 @@ def init_battle(pokemon, mode='menu'):
     battle_surf = pygame.Surface((400, 500))
     a = draw_attacker()
     d = draw_defender(pokemon)
-    moves = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[current_pokemon])).text)[
+    moves = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[current_pokemon][0])).text)[
         'moves']
     player_data = json.loads(
-        requests.get('http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[current_pokemon])).text)
-    com_data = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(pokemon)).text)
+        requests.get('http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[current_pokemon][0])).text)
+    com_data = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(pokemon[0])).text)
     label = displaybattletext('You encountered a ' + com_data['name'])
     player_hp = player_data['stats'][5]['base_stat']
     com_hp = com_data['stats'][5]['base_stat']
@@ -656,15 +687,15 @@ def starterpokemon():
     label = myfont.render('Choose your starter', 1, (0, 0, 0))
     label1 = myfont.render('pokemon!', 1, (0, 0, 0))
     def b():
-        player.pokemon.append(1)
+        player.pokemon.append([1, False])
         global x
         x = False
     def c():
-        player.pokemon.append(4)
+        player.pokemon.append([4, False])
         global x
         x = False
     def s():
-        player.pokemon.append(7)
+        player.pokemon.append([7, False])
         global x
         x = False
 
@@ -747,9 +778,9 @@ if __name__ in "__main__":
     overlay = pygame.Surface((width, height))
     pause_surf = pygame.Surface((350, 500))
     player = Player()
-    player.pokemon.append(23)
-    player.pokemon.append(432)
-    player.pokemon.append(12)
+    player.pokemon.append([23, False])
+    player.pokemon.append([432, False])
+    player.pokemon.append([12, False])
     camera_pos = (192,192)
     last_cam_pos = camera_pos
 
