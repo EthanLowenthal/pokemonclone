@@ -107,6 +107,8 @@ def button(title,x,y,width,height,inactive_color,active_color,display,sufcoordsx
     display.blit(textSurf, textRect)
 
 
+# while True:
+#     button('TEST', 100, 100, 100, 300, (0,102,0),(0,153,0),screen, action=myFunction)
 def fake_button(msg,x,y,w,h,ic,ac,display,sufcoordsx,sufcoordsy, action=None, size=40, args=None):
     pygame.draw.rect(display, ic, (x, y, w, h))
     smallText = pygame.font.SysFont(None, size)

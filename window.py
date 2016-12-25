@@ -14,8 +14,10 @@ from type_advantages import *
 
 register_openers()
 
+global current_pokemon
 optimize = True
 ingame = False
+current_pokemon = 0
 pygame.init()
 
 # map = tutorial
@@ -43,6 +45,9 @@ colors = {
 
 }
 
+inventory = {
+
+}
 
 def displayText(font=None, size=30):
 
@@ -211,7 +216,8 @@ def draw_map(cam_pos):
 
 
 def draw_attacker():
-    resp_url = 'http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[0])
+    global current_pokemon
+    resp_url = 'http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[current_pokemon])
     resp = requests.get(resp_url)
     img_url = json.loads(resp.text)['sprites']['back_default']
     urlopen = urllib.urlopen(img_url).read()
@@ -302,58 +308,29 @@ def draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__):
 def won(person):
     pass
 
-def display_pokemon(battle_surf):
-    pokemon_img = []
-    player.pokemon.append(23)
-    player.pokemon.append(432)
-    player.pokemon.append(12)
-    for i, pokemon in enumerate(player.pokemon):
-        if i <= 5:
-            img_url = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+ str(pokemon)).text)
-            urlopen = urllib.urlopen(img_url['sprites']['front_default']).read()
-            img = cStringIO.StringIO(urlopen)
-            load_img = pygame.image.load(img)
-            t_img = pygame.transform.scale(load_img, (95, 95))
-            pokemon_img.append((t_img, img_url))
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                quit()
-        battle_surf.fill(colors['WORLD'])
-        pygame.draw.rect(battle_surf, colors['YELLOW'], (10, 10, 380, 480))
-        pygame.draw.rect(battle_surf, colors['WHITE'], (20, 20, 360, 460))
-        for pos in range(6):
-            try:
-                img = pokemon_img[pos]
-                button(img[1]['name'], 30, 75 * pos + 30, 340, 70, colors['GREEN'], colors['LIGHT_GREEN'], battle_surf,
-                       200, 150, size=35)
-                battle_surf.blit(img[0], (20, 75 * pos + 30 - 20))
-            except:
-                button('No Pokemon', 30, 75 * pos + 30, 340, 70, colors['GREY'], colors['DARK_GREY'], battle_surf,
-                      200, 150, size=35)
-        overlay.set_alpha(100)
-        display.blit(overlay, (0, 0))
-        display.blit(battle_surf, (200, 150))
-        pygame.display.flip()
+def change_pokemon(num):
+    global current_pokemon
+    current_pokemon = num
+    init_battle(pokemon, mode='menu')
 
+def display_pokemon(battle_surf):
+    global pokemon_img
+    battle_surf.fill(colors['WORLD'])
+    pygame.draw.rect(battle_surf, colors['YELLOW'], (10, 10, 380, 480))
+    pygame.draw.rect(battle_surf, colors['WHITE'], (20, 20, 360, 460))
+    for pos in range(6):
+        try:
+            img = pokemon_img[pos]
+            button(img[1]['name'], 30, 75 * pos + 30, 340, 70, colors['GREEN'], colors['LIGHT_GREEN'], battle_surf,200, 150, action=change_pokemon, size=35, args=pos)
+            battle_surf.blit(img[0], (20, 75 * pos + 30 - 20))
+        except:
+            button('No Pokemon', 30, 75 * pos + 30, 340, 70, colors['GREY'], colors['DARK_GREY'], battle_surf,200, 150, size=35)
 
 def change_mode(x):
     battle(x[0]['id'], __mode__=x[1])
 
 def battle(pokemon, __mode__='menu'):
-    global move_used, label, dmg, player_hp, com_hp, escape_times
-    escape_times = 0
-    overlay.fill(colors['BLACK'])
-    move_used = False
-    battle_surf = pygame.Surface((400, 500))
-    a = draw_attacker()
-    d = draw_defender(pokemon)
-    moves = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+ str(player.pokemon[0])).text)['moves']
-    player_data = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+str(player.pokemon[0])).text)
-    com_data = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/'+ str(pokemon)).text)
-    label = displaybattletext('You encountered a ' + com_data['name'])
-    player_hp = player_data['stats'][5]['base_stat']
-    com_hp = com_data['stats'][5]['base_stat']
+    global move_used, label, dmg, player_hp, com_hp, escape_times, pokemon_img, battle_surf, d, a, moves, player_data, com_data
     while True:
         overlay.set_alpha(100)
         for event in pygame.event.get():
@@ -363,7 +340,12 @@ def battle(pokemon, __mode__='menu'):
                 if event.key == K_ESCAPE:
                     pause(player)
         draw_battle(battle_surf, d, a, moves, player_data, com_data,__mode__)
-        if __mode__ == 'attack':
+        if __mode__ == 'menu':
+            button('Attack', 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'attack'))
+            button('Run', 30, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'run'))
+            button('Items', 200, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'items'))
+            button('Pokemon', 200, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'pokemon'))
+        elif __mode__ == 'attack':
             try:
                 button(moves[0]['move']['name'], 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,
                        200,
@@ -395,7 +377,6 @@ def battle(pokemon, __mode__='menu'):
             com_speed = (com_data['stats'][0]['base_stat']/4)%256
             chance = ((player_speed * 32)/com_speed) + 30 * escape_times
             roll = random.randint(0,255)
-            print(chance, roll)
             if roll > chance or chance > 255:
                 label = displaybattletext('You ran away!')
                 battle_surf.blit(label, (40, 255))
@@ -410,12 +391,8 @@ def battle(pokemon, __mode__='menu'):
             __mode__ = 'menu'
         elif __mode__ == 'pokemon':
             display_pokemon(battle_surf)
-        elif __mode__ == 'menu':
-                button('Attack', 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'attack'))
-                button('Run', 30, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'run'))
-                button('Items', 200, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'items'))
-                button('Pokemon', 200, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf,200,150, size=35, action=change_mode, args=(com_data, 'pokemon'))
-        battle_surf.blit(label, (40, 255))
+        if __mode__ != 'pokemon':
+            battle_surf.blit(label, (40, 255))
         overlay.set_alpha(100)
         display.blit(overlay, (0, 0))
         display.blit(battle_surf, (200, 150))
@@ -492,6 +469,33 @@ def battle(pokemon, __mode__='menu'):
             __mode__ = 'menu'
 
 
+def init_battle(pokemon, mode='menu'):
+    global move_used, label, dmg, player_hp, com_hp, escape_times, pokemon_img, battle_surf, d, a, moves, player_data, com_data
+    pokemon_img = []
+    for i, pokemon in enumerate(player.pokemon):
+        if i <= 5:
+            img_url = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(pokemon)).text)
+            urlopen = urllib.urlopen(img_url['sprites']['front_default']).read()
+            img = cStringIO.StringIO(urlopen)
+            load_img = pygame.image.load(img)
+            t_img = pygame.transform.scale(load_img, (95, 95))
+            pokemon_img.append((t_img, img_url))
+    escape_times = 0
+    overlay.fill(colors['BLACK'])
+    move_used = False
+    battle_surf = pygame.Surface((400, 500))
+    a = draw_attacker()
+    d = draw_defender(pokemon)
+    moves = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[current_pokemon])).text)[
+        'moves']
+    player_data = json.loads(
+        requests.get('http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[current_pokemon])).text)
+    com_data = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(pokemon)).text)
+    label = displaybattletext('You encountered a ' + com_data['name'])
+    player_hp = player_data['stats'][5]['base_stat']
+    com_hp = com_data['stats'][5]['base_stat']
+    battle(pokemon, __mode__=mode)
+
 def get_pokemon():
     chance = random.randint(1, 1000)
     global pokemon, textlog, last_cam_pos
@@ -507,7 +511,7 @@ def get_pokemon():
         textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
         displayText()
         pygame.display.flip()
-        battle(json.loads(resp.text)['id'])
+        init_battle(json.loads(resp.text)['id'])
 
 def resume_game():
     global p
@@ -743,9 +747,11 @@ if __name__ in "__main__":
     overlay = pygame.Surface((width, height))
     pause_surf = pygame.Surface((350, 500))
     player = Player()
+    player.pokemon.append(23)
+    player.pokemon.append(432)
+    player.pokemon.append(12)
     camera_pos = (192,192)
     last_cam_pos = camera_pos
-    print(width, height)
 
 
     intro = True
