@@ -1,6 +1,6 @@
 import sys
 if sys.maxsize.bit_length() == 63: print('ONLY RUNS IN 32 BIT PYTHON: SHUTTING DOWN') & quit()
-import pygame, time, random, json, requests, urllib, cStringIO
+import pygame, time, random, json, requests, urllib, cStringIO, math
 try:pass
 except:print('A REQIERED PACKAGE IS NOT INSTALLED: SHUTTING DOWN') & quit()
 try: import maps, pokemon
@@ -45,8 +45,16 @@ colors = {
 
 }
 
+items = {
+    'weak potion':4,
+    'medium potion':8,
+    'strong potion':12
+}
 inventory = {
-
+    'pokeball':10,
+    'weak potion':5,
+    'medium potion':1,
+    'strong potion':0
 }
 
 def displayText(font=None, size=30):
@@ -266,6 +274,53 @@ def use_move(x):
     dmg = ((((2*A+10)/250) * B/D * C + 2) * 1 * Y * Z)/255
 
 
+def use_pokeball():
+    inventory['pokeball'] -= 1
+    total_hp = com_data['stats'][5]['base_stat']
+    bonusstatus = 0
+    rate = random.randint(100,255)
+    catch_rate = math.max((3 * total_hp - 2 * com_hp) * rate / (3 * total_hp), 1) + bonusstatus
+    print(catch_rate)
+    return catch_rate
+
+
+def use_potion(potion):
+    global player_hp
+    player_hp += items[potion]
+    inventory[potion] -= 1
+    if player_hp > player_data['stats'][5]['base_stat']:
+        player_hp = player_data['stats'][5]['base_stat']
+    return player_hp
+
+def use_item(item):
+    if item == 'pokeball':
+        use_pokeball()
+    elif item == 'weak potion':
+        player_hp = use_potion('weak potion')
+
+    elif item == 'medium potion':
+        player_hp = use_potion('medium potion')
+
+    elif item == 'strong potion':
+        player_hp = use_potion('strong potion')
+
+    print(player_hp)
+
+
+def display_items(battle_surf):
+    global pokemon_img
+    battle_surf.fill(colors['WORLD'])
+    pygame.draw.rect(battle_surf, colors['YELLOW'], (10, 10, 380, 480))
+    pygame.draw.rect(battle_surf, colors['WHITE'], (20, 20, 360, 460))
+    for pos, item in enumerate(inventory):
+        if inventory[item] > 0:
+            button(str(item)+' ('+str(inventory[item])+')', 30, 75 * pos + 30, 340, 70, colors['GREEN'], colors['LIGHT_GREEN'], battle_surf,200, 150, action=use_item, size=35, args=item)
+        else:
+            button(str(item) + ' (0)', 30, 75 * pos + 30, 340, 70, colors['RED'],colors['DARK_RED'], battle_surf, 200, 150)
+    for i in range(-(len(inventory)-6)):
+        button('No Item', 30, 75 * (i + len(inventory)) + 30, 340, 70, colors['GREY'], colors['DARK_GREY'], battle_surf,200, 150, size=35)
+
+
 def draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__):
     global player_hp, com_hp
     battle_surf.fill(colors['WORLD'])
@@ -401,7 +456,8 @@ def battle(pokemon, __mode__='menu'):
                        150, size=35, action=use_move, args=[moves[3], player_data, com_data])
             except:
                 button('No Move', 30, 320, 165, 70, colors['GREY'], colors['DARK_GREY'], battle_surf, 200, 150, size=35)
-
+        elif __mode__ == 'items':
+            display_items(battle_surf)
         elif __mode__ =='run':
             escape_times += 1
             player_speed = player_data['stats'][0]['base_stat']
@@ -422,7 +478,7 @@ def battle(pokemon, __mode__='menu'):
             __mode__ = 'menu'
         elif __mode__ == 'pokemon':
             display_pokemon(battle_surf)
-        if __mode__ != 'pokemon':
+        if __mode__ == 'menu':
             battle_surf.blit(label, (40, 255))
         overlay.set_alpha(100)
         display.blit(overlay, (0, 0))
