@@ -10,7 +10,7 @@ from pokemon import *
 from pygame.locals import *
 from gui import *
 from poster.streaminghttp import register_openers
-from type_advantages import *
+from pokemon_data import *
 
 register_openers()
 
@@ -46,15 +46,17 @@ colors = {
 }
 
 items = {
-    'weak potion':4,
-    'medium potion':8,
-    'strong potion':12
+    'potion':20,
+    'max-potion':1000,
+    'super-potion':50
 }
+
+
 inventory = {
-    'pokeball':10,
-    'weak potion':5,
-    'medium potion':1,
-    'strong potion':0
+    'poke-ball':10,
+    'potion':5,
+    'max-potion':1,
+    'super-potion':0
 }
 
 def displayText(font=None, size=30):
@@ -274,12 +276,12 @@ def use_move(x):
     dmg = ((((2*A+10)/250) * B/D * C + 2) * 1 * Y * Z)/255
 
 
-def use_pokeball():
-    inventory['pokeball'] -= 1
+def use_poke-ball():
+    inventory['poke-ball'] -= 1
     total_hp = com_data['stats'][5]['base_stat']
     bonusstatus = 0
     rate = random.randint(100,255)
-    catch_rate = math.max((3 * total_hp - 2 * com_hp) * rate / (3 * total_hp), 1) + bonusstatus
+    catch_rate = max((3 * total_hp - 2 * com_hp) * rate / (3 * total_hp), 1) + bonusstatus
     print(catch_rate)
     return catch_rate
 
@@ -293,18 +295,22 @@ def use_potion(potion):
     return player_hp
 
 def use_item(item):
-    if item == 'pokeball':
-        use_pokeball()
-    elif item == 'weak potion':
-        player_hp = use_potion('weak potion')
+    global label, player_hp
+    time.sleep(1)
+    if item == 'poke-ball':
+        use_poke-ball()
+    elif item == 'potion':
+        player_hp = use_potion('potion')
 
-    elif item == 'medium potion':
-        player_hp = use_potion('medium potion')
+    elif item == 'max-potion':
+        player_hp = use_potion('max-potion')
 
-    elif item == 'strong potion':
-        player_hp = use_potion('strong potion')
+    elif item == 'super-potion':
+        player_hp = use_potion('super-potion')
 
     print(player_hp)
+    label = displaybattletext('You used a ' + item)
+    battle(pokemon)
 
 
 def display_items(battle_surf):
