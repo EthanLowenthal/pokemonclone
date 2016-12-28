@@ -277,13 +277,14 @@ def use_move(x):
 
 
 def use_pokeball():
-    global d
+    global d, pokemon, com_data
     inventory['poke-ball'] -= 1
     total_hp = com_data['stats'][5]['base_stat']
     bonusstatus = 0
     rate = random.randint(100,255)
     catch_rate = max((3 * total_hp - 2 * com_hp) * rate / (3 * total_hp), 1) + bonusstatus
     if random.randint(0,100) > catch_rate:
+        player.pokemon.append([com_data['id'], False])
         resp_url = item_url['poke-ball']
         resp = requests.get(resp_url)
         img_url = json.loads(resp.text)['sprites']['default']
@@ -292,6 +293,15 @@ def use_pokeball():
         load_img = pygame.image.load(img)
         t_img = pygame.transform.scale(load_img, (150, 150))
         d = t_img
+        draw_battle(battle_surf, d, a, moves, player_data, com_data, 'menu')
+        label = displaybattletext('You captured '+com_data['name'])
+        battle_surf.blit(label, (40, 255))
+        overlay.set_alpha(100)
+        display.blit(overlay, (0, 0))
+        display.blit(battle_surf, (200, 150))
+        pygame.display.flip()
+        time.sleep(2)
+        Main()
 
 
 def use_potion(potion):
