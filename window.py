@@ -244,7 +244,7 @@ def draw_defender(pokemon):
     urlopen = urllib.urlopen(img_url['front_default']).read()
     img = cStringIO.StringIO(urlopen)
     load_img = pygame.image.load(img)
-    t_img = pygame.transform.scale(load_img, (250, 250))
+    t_img = pygame.transform.scale(load_img, (200, 200))
     return t_img
 
 def displaybattletext(text):
@@ -276,14 +276,22 @@ def use_move(x):
     dmg = ((((2*A+10)/250) * B/D * C + 2) * 1 * Y * Z)/255
 
 
-def use_poke-ball():
+def use_pokeball():
+    global d
     inventory['poke-ball'] -= 1
     total_hp = com_data['stats'][5]['base_stat']
     bonusstatus = 0
     rate = random.randint(100,255)
     catch_rate = max((3 * total_hp - 2 * com_hp) * rate / (3 * total_hp), 1) + bonusstatus
-    print(catch_rate)
-    return catch_rate
+    if random.randint(0,100) > catch_rate:
+        resp_url = item_url['poke-ball']
+        resp = requests.get(resp_url)
+        img_url = json.loads(resp.text)['sprites']['default']
+        urlopen = urllib.urlopen(img_url).read()
+        img = cStringIO.StringIO(urlopen)
+        load_img = pygame.image.load(img)
+        t_img = pygame.transform.scale(load_img, (150, 150))
+        d = t_img
 
 
 def use_potion(potion):
@@ -298,7 +306,7 @@ def use_item(item):
     global label, player_hp
     time.sleep(1)
     if item == 'poke-ball':
-        use_poke-ball()
+        use_pokeball()
     elif item == 'potion':
         player_hp = use_potion('potion')
 
@@ -320,7 +328,14 @@ def display_items(battle_surf):
     pygame.draw.rect(battle_surf, colors['WHITE'], (20, 20, 360, 460))
     for pos, item in enumerate(inventory):
         if inventory[item] > 0:
-            button(str(item)+' ('+str(inventory[item])+')', 30, 75 * pos + 30, 340, 70, colors['GREEN'], colors['LIGHT_GREEN'], battle_surf,200, 150, action=use_item, size=35, args=item)
+            if inventory[item] == 'poke-ball':
+                if len(player.pokemon) < 6:
+                    button(str(item)+' ('+str(inventory[item])+')', 30, 75 * pos + 30, 340, 70, colors['GREEN'], colors['LIGHT_GREEN'], battle_surf,200, 150, action=use_item, size=35, args=item)
+                else:
+                    button(str(item) + ' (0)', 30, 75 * pos + 30, 340, 70, colors['RED'], colors['DARK_RED'],battle_surf, 200, 150)
+            else:
+                button(str(item) + ' (' + str(inventory[item]) + ')', 30, 75 * pos + 30, 340, 70, colors['GREEN'],colors['LIGHT_GREEN'], battle_surf, 200, 150, action=use_item, size=35, args=item)
+
         else:
             button(str(item) + ' (0)', 30, 75 * pos + 30, 340, 70, colors['RED'],colors['DARK_RED'], battle_surf, 200, 150)
     for i in range(-(len(inventory)-6)):
@@ -334,7 +349,7 @@ def draw_battle(battle_surf, d, a, moves, player_data, com_data, __mode__):
     pygame.draw.rect(battle_surf, colors['WHITE'], (20, 20, 360, 210))
     pygame.draw.rect(battle_surf, colors['WHITE'], (20, 240, 360, 60))
     pygame.draw.rect(battle_surf, colors['WHITE'], (20, 310, 360, 170))
-    battle_surf.blit(d, (180, -50))
+    battle_surf.blit(d, (180, 0))
     battle_surf.blit(a, (-10, 10))
     myfont = pygame.font.SysFont(None, 30)
     label = myfont.render('COM', 1, (0, 0, 0))
