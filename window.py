@@ -237,10 +237,9 @@ def draw_attacker():
     return t_img
 
 def draw_defender(pokemon):
-    resp_url = 'http://pokeapi.co/api/v2/pokemon/' + str(pokemon[0])
+    resp_url = 'http://pokeapi.co/api/v2/pokemon/' + str(pokemon)
     resp = requests.get(resp_url)
     img_url = json.loads(resp.text).get('sprites')
-    print(img_url, pokemon)
     urlopen = urllib.urlopen(img_url['front_default']).read()
     img = cStringIO.StringIO(urlopen)
     load_img = pygame.image.load(img)
@@ -294,6 +293,10 @@ def use_pokeball():
         t_img = pygame.transform.scale(load_img, (150, 150))
         d = t_img
         draw_battle(battle_surf, d, a, moves, player_data, com_data, 'menu')
+        button('Attack', 30, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200, 150, size=35)
+        button('Run', 30, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200, 150, size=35)
+        button('Items', 200, 320, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200, 150, size=35)
+        button('Pokemon', 200, 395, 165, 70, colors['ORANGE'], colors['LIGHT_ORANGE'], battle_surf, 200, 150, size=35)
         label = displaybattletext('You captured '+com_data['name'])
         battle_surf.blit(label, (40, 255))
         overlay.set_alpha(100)
@@ -326,7 +329,6 @@ def use_item(item):
     elif item == 'super-potion':
         player_hp = use_potion('super-potion')
 
-    print(player_hp)
     label = displaybattletext('You used a ' + item)
     battle(pokemon)
 
@@ -590,9 +592,9 @@ def battle(pokemon, __mode__='menu'):
 def init_battle(pokemon, mode='menu'):
     global move_used, label, dmg, player_hp, com_hp, escape_times, pokemon_img, battle_surf, d, a, moves, player_data, com_data
     pokemon_img = []
-    for i, pokemon in enumerate(player.pokemon):
+    for i, poke in enumerate(player.pokemon):
         if i <= 5:
-            img_url = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(pokemon[0])).text)
+            img_url = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(poke[0])).text)
             urlopen = urllib.urlopen(img_url['sprites']['front_default']).read()
             img = cStringIO.StringIO(urlopen)
             load_img = pygame.image.load(img)
@@ -608,7 +610,7 @@ def init_battle(pokemon, mode='menu'):
         'moves']
     player_data = json.loads(
         requests.get('http://pokeapi.co/api/v2/pokemon/' + str(player.pokemon[current_pokemon][0])).text)
-    com_data = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(pokemon[0])).text)
+    com_data = json.loads(requests.get('http://pokeapi.co/api/v2/pokemon/' + str(pokemon)).text)
     label = displaybattletext('You encountered a ' + com_data['name'])
     player_hp = player_data['stats'][5]['base_stat']
     com_hp = com_data['stats'][5]['base_stat']
@@ -617,19 +619,22 @@ def init_battle(pokemon, mode='menu'):
 def get_pokemon():
     chance = random.randint(1, 1000)
     global pokemon, textlog, last_cam_pos
-    if chance >= 1 and camera_pos != last_cam_pos:
+    if chance >= 998 and camera_pos != last_cam_pos:
         if current_tile == tiles["GRASS"] or current_tile == tiles["LIGHT_GRASS"]:
             pokemon = random.choice(grass_pokemon)
-        if current_tile == tiles["WATER"]:
+            resp = requests.get(pokemon)
+            textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
+            displayText()
+            init_battle(json.loads(resp.text)['id'])
+        elif current_tile == tiles["WATER"]:
             pokemon = random.choice(water_pokemon)
+            resp = requests.get(pokemon)
+            textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
+            displayText()
+            pygame.display.flip()
+            init_battle(json.loads(resp.text)['id'])
         else:
             last_cam_pos = camera_pos
-            return
-        resp = requests.get(pokemon)
-        textlog.append(('You encounterd a  ' + json.loads(resp.text)['name'], time.strftime("%I:%M:%S")))
-        displayText()
-        pygame.display.flip()
-        init_battle(json.loads(resp.text)['id'])
 
 def resume_game():
     global p
@@ -865,9 +870,9 @@ if __name__ in "__main__":
     overlay = pygame.Surface((width, height))
     pause_surf = pygame.Surface((350, 500))
     player = Player()
-    player.pokemon.append([23, False])
-    player.pokemon.append([432, False])
-    player.pokemon.append([12, False])
+    # player.pokemon.append([23, False])
+    # player.pokemon.append([432, False])
+    # player.pokemon.append([12, False])
     camera_pos = (192,192)
     last_cam_pos = camera_pos
 
